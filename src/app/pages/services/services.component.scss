@@ -1,0 +1,12 @@
+.text-limit {
+  display: -webkit-box;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.text-limit:hover{
+  -webkit-line-clamp: 0;
+  z-index: 2;
+}

@@ -1,0 +1,305 @@
+<div class="header bg-gradient-primary pb-8 pt-5 pt-md-8">
+  <div class="container-fluid"></div>
+</div>
+<div class="container-fluid mt--6">
+  <div class="row">
+    <div class="col">
+      <div class="card shadow-sm">
+        <div class="card-header bg-white">
+          <div class="row w-100 m-0">
+            <div class="col-sm-6 p-0">
+              <h3>Packages</h3>
+            </div>
+            <div class="col-sm-6 p-0">
+              <button class="btn btn-default btn-sm float-right" (click)="openPackageModal(packageModal)">
+                Create Package
+              </button>
+              <!-- <div class="row w-100 m-0">
+                <div class="form-group col-7 m-0">
+                  <input type="month" class="form-control" placeholder="dd/mm/yyyy" name="d2">
+                </div>
+              </div> -->
+            </div>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-flush">
+            <thead class="thead-light">
+              <tr>
+                <th>Sr. no</th>
+                <th>Name</th>
+                <th>Services</th>
+                <th>Price</th>
+                <th>Validity</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let package of packages; index as idx">
+                <td>{{ idx + 1 }}</td>
+                <td>{{ package.name }}</td>
+                <td>
+                  <ul class="p-0" style="list-style: none;">
+                    <li class="text-sm" *ngFor="let service of package.services">
+                      <strong>[{{ service.category.categoryName }}]</strong> {{ service.serviceName }}
+                    </li>
+                  </ul>
+                </td>
+                <td>{{ package.price }}</td>
+                <td>{{ package.validity }}</td>
+                <td>
+                  <button class="btn btn-default btn-sm" (click)="viewPackageStats(package.packageId, package.name)">Stats</button>
+                  <button class="btn btn-default btn-sm" (click)="openPackageModal(packageModal, package)">Edit</button>
+                  <!-- <button class="btn btn-danger btn-sm" (click)="openPackageDeleteModal(deleteModal, package)">Delete</button> -->
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template let-modal #packageModal>
+  <div class="modal-header">
+    <h4 class="modal-title">Package {{ updation ? 'Updation' : 'Creation' }}</h4>
+    <button type="button" class="close" aria-label="Close" id="closeAddNewStaffModal" #closeAddNewStaffModal
+      (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <form [formGroup]="packageForm" (ngSubmit)="savePackage(packageForm)" ngNativeValidate>
+    <div class="modal-body">
+      <div class="row">
+        <div class="col-12 col-sm-4">
+          <div class="row">
+            <div class="form-group col-12 m-0">
+              <label for="name" class="text-sm">Package Name</label>
+              <div id="name" class="input-group m-0">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">
+                    <i class="fa fa-align-justify"></i>
+                  </span>
+                </div>
+                <input type="text" name="name" formControlName="name" class="form-control" placeholder="Name" required>
+              </div>
+            </div>
+            <div class="form-group m-0 col-12 mt-2">
+              <label for="image" class="text-sm">Select Image</label>
+              <div id="image" class="input-group m-0">
+                <div class="input-group-prepend">
+                  <span class="input-group-text m-0">
+                    <i class="fa fa-file"></i>
+                  </span>
+                </div>
+                <div class="custom-file" style="border-left: 0 !important;">
+                  <input type="file" id="imageUrl" name="imageUrl" class="custom-file-input"
+                    (change)="checkImageFileType($event.target.files)">
+                  <label class="custom-file-label">
+                    <span *ngIf="tempImageFile == null">Choose File</span>
+                    <span *ngIf="tempImageFile != null">{{ tempImageFile.name }}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="form-group m-0 col-12 mt-2">
+              <label for="address" class="text-sm">Description</label>
+              <div id="address" class="input-group m-0">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">
+                    <i class="fa fa-align-justify"></i>
+                  </span>
+                </div>
+                <textarea name="description" id="adress" rows="4" class="form-control" formControlName="description"
+                  placeholder="Description"></textarea>
+              </div>
+            </div>
+            <div class="form-group col-12 m-0 mt-2">
+              <label for="validity" class="text-sm">Validity (in days)</label>
+              <div id="validity" class="input-group m-0">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">
+                    <i class="fa fa-align-justify"></i>
+                  </span>
+                </div>
+                <input type="number" name="validity" formControlName="validity" class="form-control" placeholder="validity" required>
+              </div>
+            </div>
+            <div class="form-group col-12 m-0 mt-2">
+              <label for="price" class="text-sm">Package Price</label>
+              <div id="price" class="input-group m-0">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">
+                    <i class="fa fa-inr"></i>
+                  </span>
+                </div>
+                <input type="number" name="price" formControlName="price" class="form-control" placeholder="price" required>
+              </div>
+            </div>
+            <div class="form-group col-12 m-0 mt-2">
+              <label for="status" class="text-sm">Package status</label><br>
+              <div id="status" class="btn-group btn-group-toggle" ngbRadioGroup formControlName="active">
+                <label ngbButtonLabel class="btn-primary btn-sm">
+                  <input ngbButton type="radio" [value]="true">Enable
+                </label>
+                <label ngbButtonLabel class="btn-primary btn-sm">
+                  <input ngbButton type="radio" [value]="false">Disable
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-8">
+          <div class="row">
+            <div class="col-12">
+              <div class="d-flex flex-column">
+                <h3>Categories</h3>
+                <div class="d-flex flex-wrap">
+                  <button *ngFor="let category of categories; index as idx" type="button" class="btn btn-sm mb-1"
+                    (click)="onNavSelected(category.categoryId, idx)" [ngClass]="{
+                      'btn-outline-dark': selectedCategoryIdx != idx,
+                      'btn-dark': selectedCategoryIdx == idx
+                    }">
+                    <!-- <i class="fa fa-check"></i> -->
+                    {{ category.categoryName }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row mt-2" *ngIf="services.length != 0">
+            <div class="col-12">
+              <div class="d-flex flex-column">
+                <h3>Services</h3>
+                <div class="d-flex flex-wrap">
+                  <button *ngFor="let service of services; index as idx" type="button" class="btn btn-sm mb-1"
+                    (click)="onServiceSelect(idx, service)" [ngClass]="{
+                      'btn-outline-default': selectedServiceIdx != idx,
+                      'btn-default': selectedServiceIdx == idx
+                    }">
+                    <!-- <i class="fa fa-check"></i> -->
+                    {{ service.serviceName }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row mt-2" *ngIf="showServiceCard">
+            <div class="col-12">
+              <div class="d-flex flex-column">
+                <form [formGroup]="serviceFormGroup" (ngSubmit)="addControlToService(serviceFormGroup)">
+                  <div class="row">
+                    <div class="col-12">
+                      <div class="d-flex justify-content-between">
+                        <h3>Service Details</h3>
+                        <button type="submit" class="btn btn-sm btn-default">
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-12 col-sm-6 d-flex flex-column">
+                      <span class="text-sm text-muted mb-0">Service Name</span>
+                      <h5>{{ serviceFormGroup.get('serviceName').value }}</h5>
+                    </div>
+                    <div class="col-12 col-sm-6 d-flex flex-column">
+                      <span class="text-sm text-muted mb-0">Price</span>
+                      <h5>{{ serviceFormGroup.get('price').value }}</h5>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-12 col-sm-6 form-group">
+                      <label for="sessionDuration" class="text-sm text-muted mb-0">Session Duration</label>
+                      <input type="number" class="form-control form-control-sm" id="sessionDuration"
+                        name="sessionDuration" formControlName="sessionDuration">
+                    </div>
+                    <div class="col-12 col-sm-6 form-group">
+                      <label for="numberOfSitting" class="text-sm text-muted mb-0">Total Session</label>
+                      <input type="number" class="form-control form-control-sm" id="numberOfSitting"
+                        name="numberOfSitting" formControlName="numberOfSitting">
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          <div class="row mt-2">
+            <div class="col-12">
+              <div class="d-flex flex-column">
+                <h3>List</h3>
+                <div class="d-flex flex-column justify-content-center align-items-center" *ngIf="getServiceControl().length == 0">
+                  <img src="./../../../assets/img/empty.svg" height="128px" width="128px" alt="">
+                  <h5>No Service Added Yet</h5>
+                </div>
+                <div class="table-responsive" *ngIf="getServiceControl().length != 0">
+                  <table class="table table-flush">
+                    <thead class="thead-light">
+                      <tr>
+                        <th>Sr. No</th>
+                        <th>Name</th>
+                        <th>Total Session</th>
+                        <th>Price</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let service of getServiceControl()['controls']; index as idx">
+                        <td>{{ idx + 1 }}</td>
+                        <td>
+                          <div class="d-flex flex-column">
+                            <span>{{ service.get('serviceName').value }}</span>
+                            <span class="text-sm text-muted">{{ service.get('category').value.categoryName }}</span>
+                          </div>
+                        </td>
+                        <td>{{ service.get('numberOfSitting').value }}</td>
+                        <td>{{ service.get('price').value }}</td>
+                        <td>
+                          <button class="btn btn-sm btn-danger" (click)="removeControl(idx)">
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-sm btn-default" (click)="modal.dismiss()">
+        Close
+      </button>
+      <button type="submit" class="btn btn-default btn-sm" [disabled]="loader">
+        Save
+        <span *ngIf="loader">&nbsp;</span>
+        <div *ngIf="loader" class="spinner-border spinner-border-sm text-white" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+      </button>
+    </div>
+  </form>
+</ng-template>
+
+<ng-template #deleteModal let-modal>
+  <div class="modal-header d-flex justify-content-between align-items-center">
+    <h4 class="modal-title" >Are you sure want to delete this package?</h4>
+    <button type="button" class="close" aria-label="Close" id="closeModal" #closeModal
+      (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-default float-right mr-2"
+      (click)="modal.dismiss('Cross click')">
+      NO
+    </button>
+    <button type="submit" class="btn btn-sm btn-danger float-right mr-2" (click)="deletePackage()">
+      YES
+    </button>
+  </div>
+</ng-template>

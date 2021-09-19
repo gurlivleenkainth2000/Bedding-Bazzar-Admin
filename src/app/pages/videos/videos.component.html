@@ -1,0 +1,212 @@
+<div class="header bg-gradient-primary pb-8 pt-5 pt-md-8">
+  <div class="container-fluid"></div>
+</div>
+<div class="container-fluid mt--6">
+  <div class="row">
+    <div class="col">
+      <div class="card" *ngIf="videoList.length != 0">
+        <div class="card-header bg-white">
+          <div class="row w-100 m-0">
+            <div class="col-sm-6 p-0">
+              <h3>Videos</h3>
+            </div>
+            <div class="col-sm-6 p-0">
+              <button class="btn btn-default btn-sm float-right" (click)="openVideoModal(videoModal)">
+                Add Video
+              </button>
+              <!-- <div class="row w-100 m-0">
+                <div class="form-group col-7 m-0">
+                  <input type="month" class="form-control" placeholder="dd/mm/yyyy" name="d2">
+                </div>
+              </div> -->
+            </div>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-flush">
+            <thead class="thead-light">
+              <tr>
+                <th scope="col">Sr. No</th>
+                <th scope="col">Title</th>
+                <th scope="col">Descripton</th>
+                <th scope="col">Status</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let video of videoList; index as idx">
+                <td>{{ idx + 1 }}</td>
+                <td>{{video.title}}</td>
+                <td class="text-wrap">{{ video.description }}</td>
+                <td>
+                  <h3>
+                    <span class="badge badge-pill {{ video.active ? 'badge-success' : 'badge-danger' }}">{{ video.active ? "Active" : "In-Active" }}</span>
+                  </h3>
+                </td>
+                <td>
+                  <button class="btn btn-default btn-sm"
+                    (click)="openViewVideoModal(viewVideoModal, video.videoUrl)">View
+                    Video</button>
+                  <button class="btn btn-default btn-sm" (click)="openVideoModal(videoModal, video)">Edit</button>
+                  <button class="btn btn-danger btn-sm" (click)="openDeleteModal(deleteModal, video)">Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer" *ngIf="showLoadMore">
+          <button class="btn btn-sm btn-default pull-right" (click)="loadMoreVideos()">
+            Load More
+          </button>
+        </div>
+      </div>
+      <div class="card" *ngIf="videoList.length == 0">
+        <div class="card-body d-flex flex-column justify-content-center align-items-center">
+          <img src="./../../../assets/img/empty.svg" class="img-fluid" height="256px" width="256px" alt="No Data">
+          <h2 class="mt-3">
+            <span class="text-sm text-muted">No Videos Found</span>
+          </h2>
+          <button class="btn btn-default btn-sm mt-5" (click)="openVideoModal(videoModal)">
+            Add Video
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #viewVideoModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Video</h4>
+    <button type="button" class="close" aria-label="Close" id="closeAddServiceModal" #closeAddServiceModal
+      (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body text-center">
+    <iframe style="margin-top:2px;" width="100%" height="300" [src]='sanitizer.bypassSecurityTrustResourceUrl(videoUrl)'
+      frameborder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+  </div>
+</ng-template>
+
+<ng-template #videoModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Video Details</h4>
+    <button type="button" class="close" aria-label="Close" id="closeAddNewStaffModal" #closeAddNewStaffModal
+      (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <form [formGroup]="videoForm" (ngSubmit)="uploadVideo(videoForm)">
+    <div class="modal-body">
+
+      <div class="form-group mb-2">
+        <label class="text-sm" for="title">Title</label>
+        <div class="input-group m-0">
+          <div id="title" class="input-group-prepend">
+            <span class="input-group-text">
+              <i class="fa fa-user"></i>
+            </span>
+          </div>
+          <input type="text" name="name" formControlName="title" class="form-control" placeholder="Title" required>
+        </div>
+      </div>
+
+      <div class="form-group mb-2">
+        <label class="text-sm" for="description">Description</label>
+        <div class="input-group m-0">
+          <div id="title" class="input-group-prepend">
+            <span class="input-group-text">
+              <i class="fa fa-align-justify"></i>
+            </span>
+          </div>
+          <textarea class="form-control form-control-sm" id="description" formControlName="description"
+            rows="3"></textarea>
+        </div>
+      </div>
+      <!-- <div class="form-group mb-2">
+        <label class="text-sm" for="videoUrl">Video Url</label>
+        <div class="input-group m-0">
+          <div id="videoUrl" class="input-group-prepend">
+            <span class="input-group-text">
+              <i class="fa fa-file"></i>
+            </span>
+          </div>
+          <div class="custom-file">
+            <input type="file" class="custom-file-input" id="customFile" (change)="checkImageType($event.target.files)" required>
+            <label id="imageUrl" class="custom-file-label " for="customFile">
+              <span *ngIf="tempImageFile == null">Choose Image File</span>
+              <span *ngIf="tempImageFile != null">{{ tempImageFile.name }}</span>
+            </label>
+
+        </div>
+
+      </div> -->
+
+      <div class="form-group mb-2">
+        <label class="text-sm" for="title">Video Url</label>
+        <div class="input-group m-0">
+          <div id="title" class="input-group-prepend">
+            <span class="input-group-text">
+              <i class="fa fa-user"></i>
+            </span>
+          </div>
+          <input type="text" name="videoUrl" formControlName="videoUrl" class="form-control" placeholder="Video Url"
+            required>
+        </div>
+      </div>
+      <!-- </div> -->
+
+      <div class="form-group">
+        <label class="text-sm">Image status</label><br>
+        <div class="btn-group btn-group-toggle" ngbRadioGroup formControlName="active">
+          <label ngbButtonLabel class="btn-primary btn-sm">
+            <input ngbButton type="radio" [value]="true">Enable
+          </label>
+          <label ngbButtonLabel class="btn-primary btn-sm">
+            <input ngbButton type="radio" [value]="false">Disable
+          </label>
+        </div>
+      </div>
+
+
+
+    </div>
+    <div class="modal-footer">
+      <button type="submit" class="btn btn-default btn-sm" (click)="modal.dismiss('')">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-default btn-sm" [disabled]="loader">
+        Save
+        <span *ngIf="loader">&nbsp;</span>
+        <div *ngIf="loader" class="spinner-border spinner-border-sm text-white" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+      </button>
+
+    </div>
+  </form>
+
+
+
+
+</ng-template>
+
+<ng-template #deleteModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" style="margin-top: 10px;">Are you sure want to delete this Video ?</h4>
+    <button type="button" class="close" aria-label="Close" id="closeModal" #closeModal
+      (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-default float-right mr-2" (click)="modal.dismiss('Cross click')">
+      NO
+    </button>
+    <button type="submit" class="btn btn-sm btn-danger float-right mr-2" (click)="deleteVideo()">
+      YES
+    </button>
+
+  </div>
+</ng-template>

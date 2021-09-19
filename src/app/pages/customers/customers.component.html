@@ -1,0 +1,463 @@
+<div class="header bg-gradient-primary pb-8 pt-5 pt-md-8">
+  <div class="container-fluid"></div>
+</div>
+<div class="container-fluid mt--6">
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <div class="card-header bg-white">
+          <div class="row w-100 m-0">
+            <div class="col-sm-6 p-0 ">
+              <div class="d-flex flex-column">
+                <h3 class="m-0">Customers</h3>
+                <span class="text-sm text-muted" *ngIf="searching == 0">
+                  {{ selectedMonthYear || today | date: 'MMMM yyyy' }}
+                </span>
+                <span class="text-sm text-muted" *ngIf="searching == 2">
+                  From: {{ fromDate | date: 'dd-MM-yyyy' }}
+                  Till: {{ toDate | date: 'dd-MM-yyyy' }}
+                </span>
+              </div>
+            </div>
+            <!-- <div class="col-sm-6 p-0">
+              <div class="d-flex justify-content-end">
+                <div class="form-group col-5 m-0" *ngIf="searching != 2">
+                  <input type="month" #monthYear class="form-control form-control-sm" placeholder="dd/mm/yyyy"
+                    (change)="fetchParticularMonthCustomers($event.target.value)">
+                </div>
+                <button class="btn btn-default btn-sm" (click)="openSearchModal(searchModal)">
+                  Search
+                </button>
+                <button class="btn btn-default btn-sm" (click)="openSearchModal(searchModal, true)">
+                  Add Customers
+                </button>
+                <button class="btn btn-danger btn-sm" *ngIf="searching != 0" (click)="clearFilter()">
+                  Clear
+                </button>
+              </div>
+            </div> -->
+          </div>
+          <div class="border-top mt-2 mb-2"></div>
+          <div class="row m-0">
+            <div class="col px-0">
+              <div class="d-flex align-items-end">
+                <div class="form-group col-3 px-0 m-0">
+                  <label for="mobileField" class="text-sm m-0 mb-1">Enter Customer Mobile</label>
+                  <div class="input-group m-0">
+                    <input type="tel" [ngModel]="mobile" id="mobileField"
+                      (ngModelChange)="$event.length == 10 && getCustomerOnMobile($event, customerModal, viewModal); mobile=$event;"
+                      class="form-control" placeholder="eg: 999xxxxxxx" maxlength="10" pattern="[0-9]{10}">
+                    <div class="input-group-append">
+                      <span class="input-group-text">
+                        {{ mobile?.length || 0 }} / 10
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div *ngIf="customerFetchLoader" class="spinner-border text-dark mb-2 ml-2" role="status">
+                  <span class="sr-only">Loading...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row m-0 mt-3">
+            <div class="form-group d-flex flex-column" style="border-right: 2px solid #eee; padding-right: 1rem;">
+              <label for="filterType" class="text-sm m-0 mt-2 mb-1">Select Filter Type</label>
+              <div id="filterType" class="btn-group btn-group-toggle m-0" ngbRadioGroup [ngModel]="filterOption"
+                (ngModelChange)="filterOption = $event; $event == 0 && openSearchModal()">
+                <label ngbButtonLabel class="btn-primary btn-sm">
+                  <input ngbButton type="radio" [value]="0">Date
+                </label>
+                <label ngbButtonLabel class="btn-primary btn-sm">
+                  <input ngbButton type="radio" [value]="1">Month
+                </label>
+              </div>
+            </div>
+            <div class="form-group col-3" *ngIf="filterOption">
+              <label for="dayMonthYear" class="text-sm m-0">Select Month</label>
+              <input type="month" *ngIf="filterOption" #monthYear class="form-control"
+                placeholder="dd/mm/yyyy" (change)="fetchParticularMonthCustomers($event.target.value)" [value]="selectedMonth">
+            </div>
+            <div class="col">
+              <div class="d-flex align-items-end">
+                <form class="form-inline" [formGroup]="searchCustomerByDateFB"
+                  (ngSubmit)="getCustomerOnDateRange(searchCustomerByDateFB)" *ngIf="!filterOption" ngNativeValidate>
+                  <div class="form-group mr-2 d-flex flex-column align-items-start">
+                    <label for="startDate" class="text-sm m-0 mb-1">Select From Date</label>
+                    <input id="startDate" type="date" name="fromDate" formControlName="fromDate"
+                      class="form-control" required>
+                  </div>
+                  <div class="form-group mr-2 d-flex flex-column align-items-start">
+                    <label for="endDate" class="text-sm m-0 mb-1">Select To Date</label>
+                    <input id="endDate" type="date" name="toDate" formControlName="toDate"
+                      class="form-control" required>
+                  </div>
+                  <div class="form-group mr-2 d-flex flex-column align-items-start">
+                    <label for="sort" class="text-sm m-0 mb-1">Sort By</label>
+                    <div id="sort" class="btn-group btn-group-toggle" ngbRadioGroup formControlName="sort">
+                      <label ngbButtonLabel class="btn-primary btn-sm">
+                        <input ngbButton type="radio" [value]="'asc'">Ascending
+                      </label>
+                      <label ngbButtonLabel class="btn-primary btn-sm">
+                        <input ngbButton type="radio" [value]="'desc'">Descending
+                      </label>
+                    </div>
+                  </div>
+                  <button type="submit" id="btnt" class="btn btn-sm btn-default mt-4">
+                    Search
+                  </button>
+                </form>
+                <button class="btn btn-danger btn-sm ml-2 mb-2" *ngIf="searching != 0" (click)="clearFilter()">
+                  Clear
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="table-responsive" *ngIf="customersList.length != 0">
+          <table class="table table-flush">
+            <thead class="thead-light">
+              <tr>
+                <th scope="col">Sr. No</th>
+                <th scope="col">Name / Mobile</th>
+                <th scope="col">Email / Gender</th>
+                <th scope="col">Registered On</th>
+                <th scope="col">Status</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let customer of customersList; index as idx">
+                <td>{{ idx + 1 }}</td>
+                <td>
+                  <div class="d-flex flex-column">
+                    <span>{{ customer.name }}</span>
+                    <span class="text-sm text-muted">{{ customer.mobile }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="d-flex flex-column">
+                    <span>{{ customer.email }}</span>
+                    <span class="text-sm text-muted">{{ !customer.gender ? 'Male' : 'Female'}}</span>
+                  </div>
+                </td>
+                <td>{{ customer.createdOn.toDate() | date: 'dd-MM-yyyy hh:mm:ss aa' }}</td>
+                <td>
+                  <h3>
+                    <span class="badge badge-pill {{ customer.active ? 'badge-success' : 'badge-danger' }}">{{
+                      customer.active ? "Active" : "In-Active" }}</span>
+                  </h3>
+                </td>
+                <td>
+                  <!-- <button class="btn btn-default btn-sm"
+                    (click)="viewCustomerDetails(viewModal, customer)">Details</button> -->
+                  <button class="btn btn-default btn-sm"
+                    (click)="viewInformationDetailed(customer.customerId, customer.monthlyCustomerId)">Services</button>
+                  <button class="btn btn-default btn-sm" (click)="openModal(customerModal, customer)">Edit</button>
+                  <!-- <button class="btn btn-danger btn-sm" (click)="openDeleteModal(deleteModal, customer)">Delete</button> -->
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-body d-flex flex-column justify-content-center align-items-center"
+          *ngIf="customersList.length == 0">
+          <img src="./../../../assets/img/empty.svg" class="img-fluid" height="256px" width="256px" alt="No Data">
+          <h2 class="mt-3 d-flex flex-column align-items-center">
+            <span class="text-sm text-muted">No Customer Records Found</span>
+            <span>{{ selectedMonthYear || today | date: 'MMMM yyyy' }}</span>
+          </h2>
+        </div>
+        <div class="card-footer" *ngIf="showLoadMore">
+          <button class="btn btn-sm btn-default pull-right" (click)="searching === 2 ? loadCustomersOnDateRange() : loadMoreCustomers()">
+            Load More
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #customerModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Customer {{ updation ? 'Updation' : 'Registration' }}</h4>
+    <button type="button" class="close" aria-label="Close" id="closeAddNewStaffModal" #closeAddNewStaffModal
+      (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <form [formGroup]="customerForm" (ngSubmit)="registeredCustomer(customerForm)" ngNativeValidate>
+    <div class="modal-body">
+      <div class="row">
+        <div class="form-group col-12 m-0">
+          <label for="name" class="text-sm">Name</label>
+          <div id="name" class="input-group m-0">
+            <div class="input-group-prepend">
+              <span class="input-group-text">
+                <i class="fa fa-user"></i>
+              </span>
+            </div>
+            <input type="text" name="name" formControlName="name" class="form-control" placeholder="Enter Name"
+              required>
+          </div>
+          <div *ngIf="customerForm.controls.name.invalid && customerForm.controls.name.touched "
+            class="text-danger text-sm">
+            <div *ngIf="customerForm.controls.name.errors.required">Name is required.</div>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-2">
+        <div class="form-group col-12 m-0">
+          <label for="email" class="text-sm">Email</label>
+          <div id="email" class="input-group m-0">
+            <div class="input-group-prepend">
+              <span class="input-group-text">
+                <i class="fa fa-envelope"></i>
+              </span>
+            </div>
+            <input type="email" name="email" formControlName="email" class="form-control" placeholder="Enter Email">
+          </div>
+        </div>
+      </div>
+      <div class="row mt-2">
+        <div class="form-group col-12 m-0">
+          <label for="mobile" class="text-sm">Mobile</label>
+          <div id="mobile" class="input-group m-0">
+            <div class="input-group-prepend">
+              <span class="input-group-text m-0">
+                <i class="fa fa-phone"></i>
+              </span>
+            </div>
+            <input type="tel" name="mobile" #mobile formControlName="mobile" class="form-control"
+              placeholder="Enter Mobile" required pattern="[0-9]{10}" [readonly]="updation">
+            <div class="input-group-append" *ngIf="!updation">
+              <span class="input-group-text">
+                {{ mobile.value.length }} / 10
+              </span>
+            </div>
+          </div>
+          <div *ngIf="customerForm.controls.mobile.invalid && customerForm.controls.mobile.touched "
+            class="text-danger text-sm">
+            <div *ngIf="customerForm.controls.mobile.errors.required">Mobile Number is required.</div>
+            <div *ngIf="customerForm.controls.mobile.errors.pattern">Please, Enter 10 digit Mobile Number.</div>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-2">
+        <div class="form-group col-12 m-0">
+          <label for="image">Select Image</label>
+          <div id="image" class="input-group m-0">
+            <div class="input-group-prepend">
+              <span class="input-group-text m-0">
+                <i class="fa fa-file"></i>
+              </span>
+            </div>
+            <div class="custom-file m-0" style="border-left: 0 !important;">
+              <input type="file" id="imageUrl" name="imageUrl" class="custom-file-input"
+                (change)="checkImageFileType($event.target.files)">
+              <label class="custom-file-label">
+                <span *ngIf="tempImageFile == null">Choose Image File</span>
+                <span *ngIf="tempImageFile != null">{{ tempImageFile.name }}</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-2">
+        <div class="form-group col-12 m-0">
+          <label for="address" class="text-sm">Address</label>
+          <div id="address" class="input-group m-0">
+            <div class="input-group-prepend">
+              <span class="input-group-text">
+                <i class="fa fa-align-justify"></i>
+              </span>
+            </div>
+            <textarea name="address" id="adress" rows="2" class="form-control" formControlName="address"
+              placeholder="Address"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="row mt-2">
+        <div class="form-group col-12 col-sm-6">
+          <label for="status" class="text-sm">Customer status</label><br>
+          <div id="status" class="btn-group btn-group-toggle" ngbRadioGroup formControlName="active">
+            <label ngbButtonLabel class="btn-primary btn-sm">
+              <input ngbButton type="radio" [value]="true">Enable
+            </label>
+            <label ngbButtonLabel class="btn-primary btn-sm">
+              <input ngbButton type="radio" [value]="false">Disable
+            </label>
+          </div>
+        </div>
+        <div class="form-group col-12 col-sm-6">
+          <label for="gender" class="text-sm">Gender</label><br>
+          <div id="gender" class="btn-group btn-group-toggle" ngbRadioGroup formControlName="gender">
+            <label ngbButtonLabel class="btn-primary btn-sm">
+              <input ngbButton type="radio" [value]="0">Male
+            </label>
+            <label ngbButtonLabel class="btn-primary btn-sm">
+              <input ngbButton type="radio" [value]="1">Female
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-default btn-sm" (click)="modal.dismiss('')">
+        Cancel
+      </button>
+      <button type="submit" class="btn btn-default btn-sm" [disabled]="customerForm.invalid || loader">
+        Save
+        <span *ngIf="loader">&nbsp;</span>
+        <div *ngIf="loader" class="spinner-border spinner-border-sm text-white" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+      </button>
+    </div>
+  </form>
+
+</ng-template>
+
+<ng-template #deleteModal let-modal>
+  <div class="modal-header d-flex justify-content-between align-items-center">
+    <h4 class="modal-title">Are you sure want to delete this customer?</h4>
+    <button type="button" class="close" aria-label="Close" id="closeModal" #closeModal
+      (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-sm btn-default float-right mr-2" (click)="modal.dismiss('Cross click')">
+      NO
+    </button>
+    <button type="submit" class="btn btn-sm btn-danger float-right mr-2" (click)="deleteCustomer()">
+      YES
+    </button>
+  </div>
+</ng-template>
+
+<ng-template let-modal #viewModal>
+  <div class="modal-header border-0 d-flex justify-content-between align-items-center">
+    <h3>Customer Details</h3>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="row w-100">
+      <div class="col-12 col-sm-3">
+        <img [src]="customerModel.imageUrl || './../../../assets/img/no-photo.png'" loading="lazy"
+          class="img-fluid mx-auto" alt="" style="border-radius: 25px; object-fit: contain; height: 8rem;">
+      </div>
+      <div class="col-12 col-sm pl-0">
+        <div class="row w-100 m-0">
+          <div class="col-12 d-flex flex-column p-0">
+            <span class="text-sm text-muted">Name</span>
+            <h4>{{ customerModel.name }}</h4>
+          </div>
+          <div class="col-12 d-flex flex-column p-0">
+            <span class="text-sm text-muted">Email</span>
+            <h4>{{ customerModel.email }}</h4>
+          </div>
+          <div class="col-12 d-flex flex-column p-0">
+            <span class="text-sm text-muted">Mobile</span>
+            <h4>{{ customerModel.mobile }}</h4>
+          </div>
+          <div class="col-12 d-flex flex-column p-0">
+            <span class="text-sm text-muted">Gender</span>
+            <h4>{{ customerModel.gender | titlecase }}</h4>
+          </div>
+          <div class="col-12 d-flex flex-column p-0">
+            <span class="text-sm text-muted">Address</span>
+            <h4 class="text-wrap">{{ customerModel.address }}</h4>
+          </div>
+          <div class="col-12 d-flex flex-column p-0">
+            <span class="text-sm text-muted">Registered On</span>
+            <h4 class="text-wrap">{{ customerModel.createdOn.toDate() | date: 'dd MMMM yyyy, hh:MM:ss aa' }}</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template let-modal #searchModal>
+  <div class="modal-header border-0 d-flex justify-content-between align-items-center">
+    <h3>Customer Search</h3>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="searchCustomerByMobileFB"
+      (ngSubmit)="getCustomerOnMobile(searchCustomerByMobileFB, customerModal, viewModal)" ngNativeValidate>
+      <div class="row">
+        <div class="form-group col m-0 mb-2">
+          <label for="mobile" class="text-sm">Mobile</label>
+          <div id="mobile" class="input-group m-0">
+            <div class="input-group-prepend">
+              <span class="input-group-text m-0">
+                <i class="fa fa-phone"></i>
+              </span>
+            </div>
+            <input type="tel" name="mobile" formControlName="mobile" class="form-control" placeholder="Enter Mobile"
+              required>
+          </div>
+        </div>
+
+        <div class="col-12 my-2">
+          <div class="d-flex justify-content-center align-items-center">
+            <button type="submit" class="btn btn-sm btn-default shadow-none">
+              Search
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+    <form *ngIf="!showDateRange" [formGroup]="searchCustomerByDateFB"
+      (ngSubmit)="getCustomerOnDateRange(searchCustomerByDateFB)" ngNativeValidate>
+      <div class="row border-top mt-2 mx-auto">
+        <div class="form-group col m-0 mt-2 p-0">
+          <label for="mobile" class="text-sm">Select From Date</label>
+          <div id="mobile" class="input-group m-0">
+            <div class="input-group-prepend">
+              <span class="input-group-text m-0">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+            </div>
+            <input type="date" name="fromDate" formControlName="fromDate" class="form-control" required>
+          </div>
+        </div>
+        <div class="form-group col m-0 mt-2 p-0">
+          <label for="mobile" class="text-sm">Select To Date</label>
+          <div id="mobile" class="input-group m-0">
+            <div class="input-group-prepend">
+              <span class="input-group-text m-0">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+            </div>
+            <input type="date" name="toDate" formControlName="toDate" class="form-control" required>
+          </div>
+        </div>
+        <div class="form-group col m-0 mt-2 p-0">
+          <label for="sort" class="text-sm">Sort By</label><br>
+          <div id="sort" class="btn-group btn-group-toggle" ngbRadioGroup formControlName="sort">
+            <label ngbButtonLabel class="btn-primary btn-sm">
+              <input ngbButton type="radio" [value]="'asc'">Ascending
+            </label>
+            <label ngbButtonLabel class="btn-primary btn-sm">
+              <input ngbButton type="radio" [value]="'desc'">Descending
+            </label>
+          </div>
+        </div>
+        <div class="col-12 mt-4">
+          <div class="d-flex justify-content-center align-items-center">
+            <button type="submit" class="btn btn-sm btn-default shadow-none">
+              Search
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</ng-template>

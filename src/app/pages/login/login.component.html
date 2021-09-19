@@ -1,0 +1,52 @@
+<div class="header bg-gradient-danger py-7 py-lg-8">
+  <div class="container"></div>
+</div>
+<!-- Page content -->
+<div class="container mt--6 pb-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-5 col-md-7">
+      <div class="card bg-secondary shadow border-0">
+        <div class="card-header bg-white bg-transparent">
+          <div class="d-flex flex-column justify-content-center align-items-center">
+            <h2 class="mb-1">BEDDING BAZAR</h2>
+            <h3 class="text-muted mb-0">Admin Login</h3>
+          </div>
+        </div>
+        <div class="card-body px-lg-5 py-lg-5">
+          <form [formGroup]="loginForm" (ngSubmit)="loginFormSubmit(loginForm)">
+            <div class="form-group mb-3">
+              <div class="input-group input-group-alternative">
+                <div class="input-group-prepend">
+                  <span class="input-group-text"><i class="ni ni-email-83"></i></span>
+                </div>
+                <input class="form-control" placeholder="Email" type="email" formControlName="email">
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="input-group input-group-alternative">
+                <div class="input-group-prepend">
+                  <span class="input-group-text"><i class="ni ni-lock-circle-open"></i></span>
+                </div>
+                <input class="form-control" placeholder="Password" type="password" formControlName="password">
+              </div>
+            </div>
+
+            <div class="text-danger text-center m-0" role="alert" *ngIf="errorMsg !== ''">
+              <small>{{ errorMsg }}</small>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-6">
+              <a href="mailto:bedding.bazzar2021@gmail.com" class="btn btn-link align-middle text-primary p-0">Contact US</a>
+              <button type="submit" class="btn btn-primary" [disabled]="loader">
+                Sign in
+                <span *ngIf="loader">&nbsp;</span>
+                <div *ngIf="loader" class="spinner-border spinner-border-sm text-light" role="status">
+                  <span class="sr-only">Loading...</span>
+                </div>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

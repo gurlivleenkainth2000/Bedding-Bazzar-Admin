@@ -1,0 +1,292 @@
+<div class="header bg-gradient-primary pb-6 pt-5 pt-md-8">
+  <div class="container-fluid">
+
+  </div>
+</div>
+<div class="container-fluid mt--6">
+  <div class="row" *ngIf="globalStat != undefined">
+    <div class="col-xl-3 col-lg-6 my-2 ">
+      <div class="card card-stats mb-4 mb-xl-0 shadow">
+        <div class="card-header bg-white">
+          <div class="d-flex flex-column align-items-center justify-content-center">
+            <div class="bg-light round-circle mt--5">
+              <span class="material-icons">groups</span>
+            </div>
+            <h4 class="card-title text-uppercase text-muted mt-2 mb-0">Staff</h4>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="d-flex flex-column">
+            <div class="d-flex justify-content-between">
+              <span>Active</span>
+              <span class="font-weight-bold mb-0">{{ globalStat['staffActiveCount'] | number: '1.0':'en-us' }}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span>In Active</span>
+              <span class="font-weight-bold mb-0">{{ globalStat['staffInactiveCount'] | number: '1.0':'en-us' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 my-2 ">
+      <div class="card card-stats mb-4 mb-xl-0 shadow">
+        <div class="card-header bg-white">
+          <div class="d-flex flex-column align-items-center justify-content-center">
+            <div class="bg-light round-circle mt--5">
+              <span class="material-icons">miscellaneous_services</span>
+            </div>
+            <h4 class="card-title text-uppercase text-muted mt-2 mb-0">Services</h4>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="d-flex flex-column">
+            <div class="d-flex justify-content-between">
+              <span>Active</span>
+              <span class="font-weight-bold mb-0">{{ globalStat['serviceActiveCount'] | number: '1.0':'en-us' }}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span>In Active</span>
+              <span class="font-weight-bold mb-0">{{ globalStat['serviceInactiveCount'] | number: '1.0':'en-us' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 my-2 ">
+      <div class="card card-stats mb-4 mb-xl-0 shadow">
+        <div class="card-header bg-white">
+          <div class="d-flex flex-column align-items-center justify-content-center">
+            <div class="bg-light round-circle mt--5">
+              <span class="material-icons">miscellaneous_services</span>
+            </div>
+            <h4 class="card-title text-uppercase text-muted mt-2 mb-0">Packages</h4>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="d-flex flex-column">
+            <div class="d-flex justify-content-between">
+              <span>Active</span>
+              <span class="font-weight-bold mb-0">{{ globalStat['packageActiveCount'] | number: '1.0':'en-us' }}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span>In Active</span>
+              <span class="font-weight-bold mb-0">{{ globalStat['packageInactiveCount'] | number: '1.0':'en-us' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 my-2 ">
+      <div class="card card-stats mb-4 mb-xl-0 shadow">
+        <div class="card-header bg-white">
+          <div class="d-flex flex-column align-items-center justify-content-center">
+            <div class="bg-light round-circle mt--5">
+              <span class="material-icons">local_offer</span>
+            </div>
+            <h4 class="card-title text-uppercase text-muted mt-2 mb-0">Offers</h4>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="d-flex flex-column">
+            <div class="d-flex justify-content-between">
+              <span>Active</span>
+              <span class="font-weight-bold mb-0">{{ globalStat['offerActiveCount'] | number: '1.0':'en-us' }}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span>In Active</span>
+              <span class="font-weight-bold mb-0">{{ globalStat['offerInactiveCount'] | number: '1.0':'en-us' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row mt-3">
+    <div class="col">
+      <div class="d-flex flex-column">
+        <div class="d-flex justify-content-end">
+          <h3 class="m-0 mr-2 mt-2">Select Date</h3>
+          <input type="date" class="form-control col-3" (change)="getDailyVisitsStats(true, $event.target.value)" [value]="selectedDate">
+        </div>
+        <div class="row">
+          <div class="col-xl-6 col-lg-6 my-2">
+            <div class="card">
+              <div class="card-header bg-white">
+                <div class="d-flex flex-column">
+                  <h3 class="m-0">Visits</h3>
+                  <span class="text-sm text-muted">
+                    On
+                    <span class="text-dark" style="font-size: 16px;">{{ selectedDateForDailyVisitsStats || today | date: 'dd MMMM yyyy' }}</span>
+                  </span>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-flush">
+                  <thead class="thead-light">
+                    <tr>
+                      <th>Sr. No</th>
+                      <th>Name</th>
+                      <th>Count</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let area of areaStats; index as idx">
+                      <td>{{ idx + 1 }}</td>
+                      <td>{{ area.name }}</td>
+                      <td>{{ area.value }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-6 col-lg-6 my-2">
+            <div class="card">
+              <div class="card-header bg-white">
+                <div class="d-flex flex-column">
+                  <h3 class="m-0">Services By Staff</h3>
+                  <span class="text-sm text-muted">
+                    On
+                    <span class="text-dark" style="font-size: 16px;">{{ selectedDateForDailyVisitsStats || today | date: 'dd MMMM yyyy' }}</span>
+                  </span>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-flush">
+                  <thead class="thead-light">
+                    <tr>
+                      <th>Sr. No</th>
+                      <th>Name</th>
+                      <th>Count</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let staff of staffStats; index as idx">
+                      <td>{{ idx + 1 }}</td>
+                      <td>{{ staff.name }}</td>
+                      <td>{{ staff.value }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-6 col-lg-6 my-2">
+            <div class="card">
+              <div class="card-header bg-white">
+                <div class="d-flex flex-column">
+                  <h3 class="m-0">Services</h3>
+                  <span class="text-sm text-muted">
+                    On
+                    <span class="text-dark" style="font-size: 16px;">{{ selectedDateForDailyVisitsStats || today | date: 'dd MMMM yyyy' }}</span>
+                  </span>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-flush">
+                  <thead class="thead-light">
+                    <tr>
+                      <th>Sr. No</th>
+                      <th>Name</th>
+                      <th>Count</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let service of serviceStats; index as idx">
+                      <td>{{ idx + 1 }}</td>
+                      <td>{{ service.name }}</td>
+                      <td>{{ service.value }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-6 col-lg-6 my-2">
+            <div class="card">
+              <div class="card-header bg-white">
+                <div class="d-flex flex-column">
+                  <h3 class="m-0">Package Services</h3>
+                  <span class="text-sm text-muted">
+                    On
+                    <span class="text-dark" style="font-size: 16px;">{{ selectedDateForDailyVisitsStats || today | date: 'dd MMMM yyyy' }}</span>
+                  </span>
+                </div>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-flush">
+                  <thead class="thead-light">
+                    <tr>
+                      <th>Sr. No</th>
+                      <th>Name</th>
+                      <th>Count</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let service of packageServicesStats; index as idx">
+                      <td>{{ idx + 1 }}</td>
+                      <td>{{ service.name }}</td>
+                      <td>{{ service.value }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row mt-3">
+    <div class="col">
+      <div class="d-flex flex-column">
+        <div class="d-flex justify-content-end">
+          <h3 class="m-0 mr-2 mt-2">Select Month</h3>
+          <input type="month" class="form-control col-3" (change)="getMontlyStats($event.target.value)" [value]="selectedMonth">
+        </div>
+        <div class="row mt-2">
+          <div class="col">
+            <div class="card">
+              <div class="card-header bg-white">
+                <div class="d-flex flex-column">
+                  <h3 class="m-0">Sales</h3>
+                  <span class="text-sm text-muted">
+                    For
+                    <span class="text-dark" style="font-size: 16px;">{{ selectedMonthYearForMonthlyStats || today | date: 'MMMM yyyy' }}</span>
+                  </span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="chart-wrapper">
+                  <canvas id="dashboardChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mt-2">
+          <div class="col">
+            <div class="card">
+              <div class="card-header bg-white">
+                <div class="d-flex flex-column">
+                  <h3 class="m-0">Payment Received</h3>
+                  <span class="text-sm text-muted">
+                    For
+                    <span class="text-dark" style="font-size: 16px;">{{ selectedMonthYearForMonthlyStats || today | date: 'MMMM yyyy' }}</span>
+                  </span>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="chart-wrapper">
+                  <canvas id="paymentStatsChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--  -->
+</div>

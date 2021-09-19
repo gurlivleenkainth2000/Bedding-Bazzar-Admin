@@ -1,0 +1,19 @@
+.scrolling-nav {
+  white-space: nowrap;
+  overflow-y: hidden;
+  overflow-x: scroll;
+}
+
+.scrolling-nav::-webkit-scrollbar {
+  height: 4px;
+}
+
+.scrolling-nav::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 8px;
+}
+
+.scrolling-nav::-webkit-scrollbar-thumb {
+  background: rgba($color: #000000, $alpha: 0.4);
+  border-radius: 8px;
+}

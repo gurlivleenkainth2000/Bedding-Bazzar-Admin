@@ -1,0 +1,53 @@
+<nav class="navbar navbar-vertical navbar-expand-md navbar-light bg-white" id="sidenav-main">
+  <div class="container-fluid">
+    <!-- Toggler -->
+    <button class="navbar-toggler" type="button" (click)="isCollapsed=!isCollapsed"
+       aria-controls="sidenav-collapse-main">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <!-- Brand -->
+    <a class="navbar-brand p-0">
+      BEDDING BAZZAR
+    </a>
+    <!-- Collapse -->
+    <div class="collapse navbar-collapse"  [ngbCollapse]="isCollapsed" id="sidenav-collapse-main">
+      <!-- Collapse header -->
+      <div class="navbar-collapse-header d-md-none">
+        <div class="row">
+          <div class="col-6 collapse-brand">
+            <a >
+              BEDDING BAZZAR
+            </a>
+          </div>
+          <div class="col-6 collapse-close">
+            <button type="button" class="navbar-toggler" (click)="isCollapsed=!isCollapsed">
+              <span></span>
+              <span></span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Navigation -->
+      <ul class="navbar-nav">
+        <li *ngFor="let menuItem of menuItems" class="{{menuItem.class}} nav-item" style="border-bottom: 2px solid #eee;">
+          <div class="d-flex flex-column">
+            <h4 class="px-2 pt-2 text-muted m-0 mb-1 ml-1">{{ menuItem.title }}</h4>
+            <a routerLinkActive="active" *ngFor="let item of menuItem.children" [routerLink]="[item.path]"
+              class="nav-link">
+              <div class="round-navbar-icon">
+                <span class="material-icons m-0" style="font-size: 18px;">{{item.icon}}</span>
+              </div> &nbsp;
+              {{item.title}}
+            </a>
+          </div>
+        </li>
+        <li class= "nav-item d-flex d-sm-none">
+          <a routerLinkActive="active"  class="nav-link d-flex align-items-center">
+              <span class="material-icons">logout</span> &nbsp;
+              Logout
+          </a>
+      </li>
+      </ul>
+    </div>
+  </div>
+</nav>
