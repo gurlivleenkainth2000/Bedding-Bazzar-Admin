@@ -40,7 +40,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     context.loginInProcess = true;
     // this.errorMsg = "";
 
-    const loginPromise = this.authService.login(form.value.email, form.value.password);
+    const loginPromise = this.authService.login(form.value.email.trim(), form.value.password);
     loginPromise.then(function(suc) {
       context.loginInProcess = false;
     }).catch(function(err) {

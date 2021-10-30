@@ -2,17 +2,15 @@ import firebase from 'firebase/app';
 import { Category } from './category';
 
 export class Products {
-  serviceName: string;
-  serviceId: string;
-  numberOfSitting: number;
-  consumedSitting?: number;
-  gifted?: number;
-  price: number;
+  productName: string;
+  productId: string;
   description: string;
-  sessionDuration: number;
+  price: number;
   category?: Category;
-  imageUrl: string;
+  imageUrls: string[];
+  thumbnailImage: number;
   active?: boolean;
+  showOnHomePage: boolean;
   createdOn?: firebase.firestore.Timestamp;
 }
 

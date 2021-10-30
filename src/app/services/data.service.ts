@@ -108,7 +108,7 @@ export class DataService {
   getProducts() {
     if (!this.productRetrieved) {
       this.dbRef.collection(util.PRODUCTS_COLLECTION, (ref) =>
-        ref.orderBy("serviceName", "asc").limit(this.docLimit)
+        ref.orderBy("productName", "asc").limit(this.docLimit)
       )
         .get().toPromise()
         .then((response) => {

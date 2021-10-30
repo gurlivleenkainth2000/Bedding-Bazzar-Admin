@@ -171,36 +171,36 @@ export class PackagesComponent implements OnInit {
 
   initialiseFormGroup(serviceObj: Products) {
     return this.fb.group({
-      serviceName: [serviceObj.serviceName],
-      serviceId: [serviceObj.serviceId],
-      description: [serviceObj.description],
-      price: [serviceObj.price],
-      sessionDuration: [serviceObj.sessionDuration],
-      numberOfSitting: [serviceObj.numberOfSitting || 1],
-      active: [serviceObj.active || true],
-      category: this.fb.group({
-        categoryId: serviceObj.category.categoryId,
-        categoryName: serviceObj.category.categoryName,
-        active: serviceObj.category.active,
-        createdOn: serviceObj.category.createdOn,
-      })
+      // serviceName: [serviceObj.serviceName],
+      // serviceId: [serviceObj.serviceId],
+      // description: [serviceObj.description],
+      // price: [serviceObj.price],
+      // sessionDuration: [serviceObj.sessionDuration],
+      // numberOfSitting: [serviceObj.numberOfSitting || 1],
+      // active: [serviceObj.active || true],
+      // category: this.fb.group({
+      //   categoryId: serviceObj.category.categoryId,
+      //   categoryName: serviceObj.category.categoryName,
+      //   active: serviceObj.category.active,
+      //   createdOn: serviceObj.category.createdOn,
+      // })
     });
   }
 
-  addControlToService(form: FormGroup) {
-    let formValues: Products = { ...form.value };
-    let idx = this.getServiceControl().controls.findIndex(x => x.get('serviceId').value === formValues.serviceId);
-    if(idx == -1) {
-      this.getServiceControl().push(form);
-      this.packageForm.patchValue({
-        price: this.packageForm.get('price').value + (formValues.price * formValues.numberOfSitting)
-      })
-      delete(this.selectedServiceIdx);
-      this.showServiceCard = false;
-    } else {
-      this.toast.info(`${formValues.serviceName} already added`)
-    }
-  }
+  // addControlToService(form: FormGroup) {
+  //   let formValues: Products = { ...form.value };
+  //   let idx = this.getServiceControl().controls.findIndex(x => x.get('serviceId').value === formValues.serviceId);
+  //   if(idx == -1) {
+  //     this.getServiceControl().push(form);
+  //     this.packageForm.patchValue({
+  //       price: this.packageForm.get('price').value + (formValues.price * formValues.numberOfSitting)
+  //     })
+  //     delete(this.selectedServiceIdx);
+  //     this.showServiceCard = false;
+  //   } else {
+  //     this.toast.info(`${formValues.serviceName} already added`)
+  //   }
+  // }
 
   removeControl(idx) {
     this.getServiceControl().removeAt(idx);
@@ -218,7 +218,7 @@ export class PackagesComponent implements OnInit {
       if(a.category.categoryName > b.category.categoryName ) return 1;
       return 0;
     })
-    packageObj['servicesHashcode'] = packageObj.services.map(e => e.serviceId);
+    // packageObj['servicesHashcode'] = packageObj.services.map(e => e.serviceId);
     packageObj['serviceCategoriesHashcode'] = Array.from(new Set(packageObj.services.map(e => e.category.categoryId)));
 
     if (this.tempImageFile != null) {

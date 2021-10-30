@@ -8,7 +8,7 @@ import { ToastrService } from "ngx-toastr";
 import { Products } from "src/app/classes/products";
 import * as util from "./../../utils";
 import firebase from "firebase/app";
-import { Subscription } from "rxjs";
+import { combineLatest, Subscription } from "rxjs";
 import { DataService } from "src/app/services/data.service";
 import { ActivatedRoute, Router } from "@angular/router";
 import { StatsService } from "src/app/services/stats.service";
@@ -22,25 +22,30 @@ import * as FileSaver from 'file-saver';
   styleUrls: ["./services.component.scss"],
 })
 export class ServicesComponent implements OnInit {
-  serviceForm: FormGroup;
+
+  productForm: FormGroup;
   today: Date = new Date();
   monthlyId: string;
-  tempImageFile: any = null;
 
-  servicesList: Products[] = [];
+  selectedImageIdx: number = 0;
+  thumbnailImageIdx: number = 0;
+  tempImageFiles: any[] = [];
+
+  productModel: Products;
+  productsList: Products[] = [];
   categories: Category[] = [];
 
   docLimit: number = 50;
   lastDocs: any;
-  loader: boolean = false;
-  showLoadMore: boolean = false;
-  updation: boolean = false;
-  servicesModel: Products;
-  imageUrl: string;
-  productSub: Subscription;
-  categorySub: Subscription;
-  serviceDetailCardBool: boolean = false;
 
+  imageUrl: string;
+
+  subjectSub: Subscription;
+
+  loader: boolean = false;
+  updation: boolean = false;
+  showLoadMore: boolean = false;
+  serviceDetailCardBool: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -58,35 +63,29 @@ export class ServicesComponent implements OnInit {
 
   ngOnInit(): void {
     this.monthlyId = formatDate(this.today, "yyyyMM", "en-us");
-
-
     this.data.getCategories();
-    this.categorySub = this.data.productCategorySub.subscribe((res) => {
-      if(res.length != 0) {
-        this.categories = res;
-      }
-    })
-
     this.data.getProducts();
-    this.data.productSub.subscribe((response) => {
-      if (response.length < this.docLimit) {
-        this.showLoadMore = false;
-      } else {
-        this.showLoadMore = true;
-      }
 
-      if (response.length != 0) {
-        this.servicesList = response;
-      }
-    });
+    this.subjectSub = combineLatest([this.data.productCategorySub, this.data.productSub])
+      .subscribe(([categories, products]) => {
+        if (categories.length != 0) this.categories = categories;
+        if (products.length < this.docLimit) {
+          this.showLoadMore = false;
+        } else {
+          this.showLoadMore = true;
+        }
+  
+        if (products.length != 0) {
+          this.productsList = products;
+        }
+      });
   }
 
   exportServices() {
-    const workSheet: XSLX.WorkSheet = XSLX.utils.json_to_sheet(this.servicesList.map((service) => ({
-      "Service Name": service.serviceName,
-      "Service Description": service.description,
-      "Service Duration": service.sessionDuration,
-      "Service Price": service.price,
+    const workSheet: XSLX.WorkSheet = XSLX.utils.json_to_sheet(this.productsList.map((service) => ({
+      "Product Name": service.productName,
+      "Product Description": service.description,
+      "Product Price": service.price,
       "Created On": service.createdOn.toDate().toLocaleString()
     })));
     const workbook: XSLX.WorkBook = { Sheets: { 'services': workSheet }, SheetNames: ['services'] };
@@ -94,31 +93,6 @@ export class ServicesComponent implements OnInit {
     const data: Blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8' });
     FileSaver.saveAs(data, 'Services.xlsx')
   }
-
-  // getServices() {
-  //   this.data.serviceRetrieved = true;
-  //   this.dbRef.collection(util.PRODUCTS_COLLECTION, (ref) =>
-  //       ref.orderBy("createdOn", "desc").limit(this.docLimit)
-  //     )
-  //     .get().toPromise()
-  //     .then((response) => {
-  //       if (response.docs.length < this.docLimit) {
-  //         this.showLoadMore = false;
-  //       } else {
-  //         this.showLoadMore = true;
-  //       }
-
-  //       if (response.docs.length != 0) {
-  //         response.docs.forEach((ele, idx) => {
-  //           let cusObj: Products = Object.assign({}, ele.data() as Services);
-  //           this.lastDocs = ele;
-  //           this.servicesList.push(cusObj);
-  //           this.data.productLastDocs.next(ele);
-  //         });
-  //         this.data.productSub.next(this.servicesList);
-  //       }
-  //     });
-  // }
 
   async loadMoreServiceServices() {
     if (this.lastDocs == undefined) {
@@ -146,132 +120,155 @@ export class ServicesComponent implements OnInit {
           response.docs.forEach((ele, idx) => {
             let cusObj: Products = Object.assign({}, ele.data() as Products);
             this.lastDocs = ele;
-            this.servicesList.push(cusObj);
+            this.productsList.push(cusObj);
             this.data.productLastDocs.next(ele);
           });
-          this.data.productSub.next(this.servicesList);
+          this.data.productSub.next(this.productsList);
         } else {
           this.toast.info('No More Records', '');
         }
       });
   }
 
-  viewServiceStats(serviceId: string, serviceName?: string) {
-    this.router.navigate([serviceId, "stats"], { queryParams: { name: serviceName }, queryParamsHandling: "merge", relativeTo: this.route })
-  }
-
-  viewServiceDetails(modal, serviceObj: Products) {
-    this.servicesModel = serviceObj;
+  viewServiceDetails(modal, productObj: Products) {
+    this.productModel = productObj;
     this.modalService.open(modal, { size: 'sm' });
   }
 
   openModal(modal, customer: Products = null) {
-    this.modalService.open(modal, { size: "sm" });
+    this.tempImageFiles = []; 
     this.initialiseModal(customer);
+    this.modalService.open(modal, { size: "xl" });
   }
 
-  openImageModal(modal, imageUrl) {
-    this.modalService.open(modal, { size: "lg" });
-    this.imageUrl = imageUrl;
+  openImageModal(modal, imageUrls: string[], thumbnailImageIdx) {
+    this.tempImageFiles = [...imageUrls];
+    this.thumbnailImageIdx = thumbnailImageIdx;
+    this.modalService.open(modal, { 
+      size: "xl",
+      scrollable: true 
+    });
   }
 
   openDeleteModal(modal, customer: Products) {
     this.modalService.open(modal, { size: "sm" });
-    this.servicesModel = customer;
+    this.productModel = customer;
   }
 
-  initialiseModal(serviceObj: Products) {
-    if (serviceObj == null) {
+  initialiseModal(productObj: Products) {
+    if (productObj == null) {
       this.updation = false;
-      this.serviceForm = this.fb.group({
-        serviceName: [""],
-        serviceId: [this.dbRef.createId()],
-        numberOfSitting: [1],
-        price: [""],
-        imageUrl: [""],
-        sessionDuration: [""],
-        description: [""],
+      this.productForm = this.fb.group({
+        productId: [this.dbRef.createId()],
+        productName: [null],
+        price: [null],
+        imageUrls: this.fb.array([]),
+        thumbnailImage: [null],
+        description: [null],
         category: [null],
         active: [true],
+        showOnHomePage: [false],
         createdOn: [firebase.firestore.Timestamp.now()],
       });
-      // // console.log(">>> doc: ", this.ServiceServiceForm.get('ServiceserviceId').value);
     } else {
       this.updation = true;
-      this.serviceForm = this.fb.group({
-        serviceName: [serviceObj.serviceName],
-        serviceId: [serviceObj.serviceId],
-        numberOfSitting: [serviceObj.numberOfSitting],
-        price: [serviceObj.price],
-        imageUrl: [serviceObj.imageUrl],
-        description: [serviceObj.description],
-        sessionDuration: [serviceObj.sessionDuration],
-        category: [serviceObj.category],
-        active: [serviceObj.active],
-        createdOn: [serviceObj.createdOn],
+      this.productForm = this.fb.group({
+        productId: [productObj.productId],
+        productName: [productObj.productName],
+        price: [productObj.price],
+        imageUrls: [productObj.imageUrls],
+        thumbnailImage: [productObj.thumbnailImage],
+        description: [productObj.description],
+        category: [productObj.category],
+        active: [productObj.active],
+        showOnHomePage: [productObj.showOnHomePage],
+        createdOn: [productObj.createdOn],
       });
-      this.onSelectOption(serviceObj.category);
+      this.onSelectOption(productObj.category);
+      this.tempImageFiles = productObj.imageUrls || [];
     }
   }
 
   onSelectOption(category: Category) {
-    this.serviceForm.patchValue({
+    this.productForm.patchValue({
       category: this.categories.find(x => x.categoryId === category.categoryId)
     })
   }
+
   compareByCategoryId(category1: Category, category2: Category) {
     return category1 && category2 && category1.categoryId === category2.categoryId;
   }
 
   checkImageFileType(files) {
-    this.tempImageFile = files[0];
-    if (
-      this.tempImageFile.type == "image/png" ||
-      this.tempImageFile.type == "image/jpeg" ||
-      this.tempImageFile.type == "image/jpg"
-    ) {
-      // // console.log("File Ok");
-    } else {
-      // // console.log("File not Ok");
-      this.tempImageFile = null;
-      this.toast.show("Invalid Image Format. Only .jpg/.jpeg/.png supported");
+    let fileList: File[] = Object.assign([], files);
+    fileList.forEach((file: any, idx: number) => {
+      if (
+        file.type == "image/png" ||
+        file.type == "image/jpeg" ||
+        file.type == "image/jpg"
+      ) {
+        this.tempImageFiles.push(file);
+      } else {
+        this.toast.warning("Only .png/.jpeg/.jpg file format accepted!!", file.name + " will not accepted.");
+      }
+    });
+  }
+
+  removeImage(idx) {
+    this.tempImageFiles.splice(idx, 1);
+  }
+
+  getFileNameFromFirebaseDownloadedUrl(url: string) {
+    return this.stgRef.storage.refFromURL(url).name;
+  }
+
+  changeThumbnailImageIdx(idx) {
+    this.productForm.patchValue({
+      thumbnailImage: idx
+    })
+  }
+
+  async uploadImages(productId) {
+    let imageDownloadedUrl: string[] = [];
+    for await (let file of this.tempImageFiles) {
+      if (file instanceof File) {
+        const FilePath = "product-images/" + productId + "/" + file.name;
+        const FileRef = this.stgRef.ref(FilePath);
+        await this.stgRef.upload(FilePath, file);
+        imageDownloadedUrl.push(await FileRef.getDownloadURL().toPromise());
+      } else {
+        imageDownloadedUrl.push(file);
+      }
     }
+    return imageDownloadedUrl;
   }
 
   async registeredService(form: FormGroup) {
     this.loader = true;
-    let serviceObj: Products = { ...form.value };
-
-    if (this.tempImageFile != null) {
-      const file = this.tempImageFile;
-      const FilePath = "services/" + this.tempImageFile.name;
-      const FileRef = this.storage.ref(FilePath);
-      await this.storage.upload(FilePath, file);
-      serviceObj.imageUrl = await FileRef.getDownloadURL().toPromise();
-    }
-
+    let productObj: Products = { ...form.value };
+    productObj.imageUrls = await this.uploadImages(productObj.productId);
 
     this.dbRef
       .collection(util.PRODUCTS_COLLECTION)
-      .doc(serviceObj.serviceId)
-      .set(serviceObj, { merge: true })
+      .doc(productObj.productId)
+      .set(productObj, { merge: true })
       .then(
         () => {
           this.loader = false;
           if (this.updation) {
-            let index = this.servicesList.findIndex(
-              (x) => x.serviceId == serviceObj.serviceId
+            let index = this.productsList.findIndex(
+              (x) => x.productId == productObj.productId
             );
-            this.servicesList[index] = { ...serviceObj };
-            this.toast.show("Service Updated Successfully");
+            this.productsList[index] = { ...productObj };
+            this.toast.show("Product Updated Successfully");
           } else {
-            this.servicesList.splice(0, 0, serviceObj);
-            this.toast.show("Service Registered Successfully", "");
+            this.productsList.splice(0, 0, productObj);
+            this.toast.show("Product Added Successfully", "");
             this.statsService.maintainGlobalStats(util.PRODUCTS_COLLECTION, true)
           }
 
           this.updation = false;
-          this.tempImageFile = null;
+          delete this.tempImageFiles;
           this.modalService.dismissAll();
         },
         (error) => {
@@ -282,20 +279,19 @@ export class ServicesComponent implements OnInit {
       );
   }
 
-
   async deleteService() {
     this.dbRef
       .collection(util.PRODUCTS_COLLECTION)
-      .doc(this.servicesModel.serviceId)
+      .doc(this.productModel.productId)
       .delete()
       .then(
         () => {
-          let index = this.servicesList.findIndex(
-            (x) => x.serviceId == this.servicesModel.serviceId
+          let index = this.productsList.findIndex(
+            (x) => x.productId == this.productModel.productId
           );
-          this.servicesList.splice(index, 1);
+          this.productsList.splice(index, 1);
           this.modalService.dismissAll();
-          this.toast.show("Service Deleted Successfully");
+          this.toast.show("Product Deleted Successfully");
           this.statsService.maintainGlobalStats(util.PRODUCTS_COLLECTION, false)
         },
         (error) => {
@@ -304,5 +300,9 @@ export class ServicesComponent implements OnInit {
           this.toast.warning("Something went wrong!! Please Try Again");
         }
       );
+  }
+
+  openImage(url) {
+    window.open(url, "_blank")
   }
 }
