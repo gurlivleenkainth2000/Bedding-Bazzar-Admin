@@ -7,7 +7,7 @@ import { ToastrService } from 'ngx-toastr';
 import { Subscription } from 'rxjs';
 import { Category } from 'src/app/classes/category';
 import { Packages } from 'src/app/classes/packages';
-import { Services } from 'src/app/classes/services';
+import { Products } from 'src/app/classes/products';
 import { DataService } from 'src/app/services/data.service';
 import firebase from 'firebase/app';
 import * as util from './../../utils';
@@ -38,7 +38,7 @@ export class PackagesComponent implements OnInit {
   lastDocs: any;
 
   categories: Category[] = [];
-  services: Services[] = [];
+  services: Products[] = [];
   packages: Packages[] = [];
   packageModel: Packages;
 
@@ -105,23 +105,23 @@ export class PackagesComponent implements OnInit {
 
   getData() {
     this.data.getCategories();
-    this.categorySub = this.data.serviceCategorySub.subscribe(res => {
+    this.categorySub = this.data.productCategorySub.subscribe(res => {
       if(res.length != 0) {
         this.categories = res;
       }
     });
 
-    this.data.getPackages();
-    this.packageSub = this.data.packagesSub.subscribe(res => {
-      if (res.length < this.docLimit) {
-        this.showLoadMore = false;
-      } else {
-        this.showLoadMore = true;
-      }
-      if(res.length != 0) {
-        this.packages = res;
-      }
-    });
+    // this.data.getPackages();
+    // this.packageSub = this.data.packagesSub.subscribe(res => {
+    //   if (res.length < this.docLimit) {
+    //     this.showLoadMore = false;
+    //   } else {
+    //     this.showLoadMore = true;
+    //   }
+    //   if(res.length != 0) {
+    //     this.packages = res;
+    //   }
+    // });
   }
 
   viewPackageStats(packageId: string, packageName?: string) {
@@ -137,12 +137,12 @@ export class PackagesComponent implements OnInit {
     delete(this.selectedServiceIdx);
     // // console.log(">>> On Nav Selection: ", categoryId);
     this.dbRef.collection(
-      util.SERVICES_COLLECTION,
+      util.PRODUCTS_COLLECTION,
       ref => ref.where('category.categoryId', '==', categoryId)
     )
     .get().toPromise()
     .then((value) => {
-      this.services = value.docs.map(e => Object.assign({}, e.data() as Services))
+      this.services = value.docs.map(e => Object.assign({}, e.data() as Products))
       // // console.log(">>> Services: ", this.services);
 
     })
@@ -163,13 +163,13 @@ export class PackagesComponent implements OnInit {
     }
   }
 
-  onServiceSelect(idx, serviceObj: Services) {
+  onServiceSelect(idx, serviceObj: Products) {
     this.selectedServiceIdx = idx;
     this.showServiceCard = true;
     this.serviceFormGroup = this.initialiseFormGroup(serviceObj);
   }
 
-  initialiseFormGroup(serviceObj: Services) {
+  initialiseFormGroup(serviceObj: Products) {
     return this.fb.group({
       serviceName: [serviceObj.serviceName],
       serviceId: [serviceObj.serviceId],
@@ -188,7 +188,7 @@ export class PackagesComponent implements OnInit {
   }
 
   addControlToService(form: FormGroup) {
-    let formValues: Services = { ...form.value };
+    let formValues: Products = { ...form.value };
     let idx = this.getServiceControl().controls.findIndex(x => x.get('serviceId').value === formValues.serviceId);
     if(idx == -1) {
       this.getServiceControl().push(form);
@@ -229,22 +229,22 @@ export class PackagesComponent implements OnInit {
       packageObj.imageUrl = await FileRef.getDownloadURL().toPromise();
     }
 
-    this.dbRef.collection(util.PACKAGES_COLLECTION).doc(packageObj.packageId)
-      .set(packageObj, { merge: true })
-      .then(() => {
-        if(this.updation) {
-          let idx = this.packages.findIndex(x => x.packageId === packageObj.packageId);
-          this.packages[idx] = { ...packageObj };
-        } else {
-          this.packages.splice(0,0, packageObj)
-        }
-        this.loader = false;
-        this.modalService.dismissAll();
-        this.toast.show("Package Added / Updated Successfully", "");
-      }, (error) => {
-        this.loader = false;
-        this.toast.show("Something Went Wrong!! Please Try Again", "");
-      })
+    // this.dbRef.collection(util.PACKAGES_COLLECTION).doc(packageObj.packageId)
+    //   .set(packageObj, { merge: true })
+    //   .then(() => {
+    //     if(this.updation) {
+    //       let idx = this.packages.findIndex(x => x.packageId === packageObj.packageId);
+    //       this.packages[idx] = { ...packageObj };
+    //     } else {
+    //       this.packages.splice(0,0, packageObj)
+    //     }
+    //     this.loader = false;
+    //     this.modalService.dismissAll();
+    //     this.toast.show("Package Added / Updated Successfully", "");
+    //   }, (error) => {
+    //     this.loader = false;
+    //     this.toast.show("Something Went Wrong!! Please Try Again", "");
+    //   })
   }
 
   async deletePackage() {
@@ -253,7 +253,7 @@ export class PackagesComponent implements OnInit {
     }
 
     this.dbRef
-      .collection(util.SERVICES_COLLECTION)
+      .collection(util.PRODUCTS_COLLECTION)
       .doc(this.packageModel.packageId)
       .delete()
       .then(

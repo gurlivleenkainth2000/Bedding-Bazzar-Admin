@@ -9,7 +9,7 @@ import { DataService } from 'src/app/services/data.service';
 import { StatsService } from 'src/app/services/stats.service';
 import * as util from "src/app/utils";
 import firebase from "firebase/app";
-import { Services } from 'src/app/classes/services';
+import { Products } from 'src/app/classes/products';
 
 @Component({
   selector: 'app-service-category',
@@ -27,7 +27,7 @@ export class ServiceCategoryComponent implements OnInit {
   updation: boolean = false;
   showLoadMore: boolean = false;
   serviceCategoryModel: Category;
-  servicesList: Services[] = [];
+  servicesList: Products[] = [];
   categoryId: string;
 
 
@@ -46,7 +46,7 @@ export class ServiceCategoryComponent implements OnInit {
   ngOnInit(): void {
 
     this.data.getCategories();
-    this.data.serviceCategorySub.subscribe((response) =>{
+    this.data.productCategorySub.subscribe((response) =>{
       if (response.length < this.docLimit) {
         this.showLoadMore = false;
       } else {
@@ -74,14 +74,6 @@ export class ServiceCategoryComponent implements OnInit {
     this.modalService.open(modal, {size: "lg"});
   }
 
-  // openDeleteModal(modal, category: Category){
-  //   this.modalService.open(modal, {size: "sm"});
-  //   this.serviceCategoryModel = category
-  // }
-
-
-
-
   initialiseModal(serviceCategoryObj: Category) {
     if (serviceCategoryObj == null) {
       this.updation = false;
@@ -108,7 +100,7 @@ export class ServiceCategoryComponent implements OnInit {
     let serviceCategoryObj: Category = { ...form.value };
 
     this.dbRef
-      .collection(util.SERVICE_CATEGORY_COLLECTION)
+      .collection(util.PRODUCT_CATEGORY_COLLECTION)
       .doc(serviceCategoryObj.categoryId)
       .set(serviceCategoryObj, { merge: true })
       .then(
@@ -123,7 +115,7 @@ export class ServiceCategoryComponent implements OnInit {
           } else {
             this.serviceCategoryList.splice(0, 0, serviceCategoryObj);
             this.toast.show("Category Registered Successfully", "");
-            this.statsService.maintainGlobalStats(util.SERVICE_CATEGORY_COLLECTION,true)
+            this.statsService.maintainGlobalStats(util.PRODUCT_CATEGORY_COLLECTION,true)
           }
 
           this.updation = false;
@@ -138,28 +130,23 @@ export class ServiceCategoryComponent implements OnInit {
   }
 
   getServices(category: Category, modal){
-    this.dbRef.collection(util.SERVICES_COLLECTION,(ref) => ref.where("category.categoryId", "==", category.categoryId  )  )
+    this.dbRef.collection(util.PRODUCTS_COLLECTION,(ref) => ref.where("category.categoryId", "==", category.categoryId  )  )
     .get().toPromise()
     .then((value) => {
-      this.servicesList = value.docs.map(e => Object.assign({}, e.data() as Services))
+      this.servicesList = value.docs.map(e => Object.assign({}, e.data() as Products))
       this.modalService.open(modal, {size: "lg"});
     // this.serviceCategoryModel = category
 
       // value.docs.forEach((ele) => {
-      //   let serviceObj: Services = Object.assign({}, ele.data() as Services)
+      //   let serviceObj: Products = Object.assign({}, ele.data() as Services)
       //   this.servicesList.push(serviceObj);
       // })
-
-
     })
-    // console.log(this.servicesList);
-
   }
-
 
   async deleteCategory() {
     this.dbRef
-      .collection(util.SERVICE_CATEGORY_COLLECTION)
+      .collection(util.PRODUCT_CATEGORY_COLLECTION)
       .doc(this.serviceCategoryModel.categoryId)
       .delete()
       .then(
@@ -170,7 +157,7 @@ export class ServiceCategoryComponent implements OnInit {
           this.serviceCategoryList.splice(index, 1);
           this.modalService.dismissAll();
           this.toast.show("Category Deleted Successfully");
-          this.statsService.maintainGlobalStats(util.SERVICE_CATEGORY_COLLECTION,false)
+          this.statsService.maintainGlobalStats(util.PRODUCT_CATEGORY_COLLECTION,false)
         },
         (error) => {
           // console.log(">>> Error", error);

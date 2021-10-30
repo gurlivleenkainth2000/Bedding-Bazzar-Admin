@@ -30,7 +30,7 @@ export class VideosComponent implements OnInit {
   videoSub: Subscription;
   videoUrl: string;
   loader: boolean = false;
-
+  canWrite: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -44,7 +44,7 @@ export class VideosComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-
+    this.canWrite = this.data.canWriteCheck();
     if(this.data.videosRetrieved) {
       this.videoSub = this.data.videosSub.subscribe(list => {
         if(list.length != 0) {

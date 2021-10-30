@@ -1,6 +1,5 @@
 import { Routes } from "@angular/router";
 import { CustomersComponent } from "src/app/pages/customers/customers.component";
-import { ExtrasComponent } from "src/app/pages/extras/extras.component";
 import { ImagesComponent } from "src/app/pages/images/images.component";
 import { OffersComponent } from "src/app/pages/offers/offers.component";
 import { ServiceCategoryComponent } from "src/app/pages/service-category/service-category.component";
@@ -22,7 +21,6 @@ export const AdminLayoutRoutes: Routes = [
   { path: "slider-images", component: SliderComponent },
   { path: "videos", component: VideosComponent },
   { path: "offers", component: OffersComponent },
-  { path: "configurations", component: ExtrasComponent },
   { path: "queries", component: QueriesComponent },
   { path: "notifications", component: NotificationsComponent },
 ];

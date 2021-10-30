@@ -1,5 +1,4 @@
 import firebase from "firebase/app";
-import { Services } from "./services";
 
 export class Customers {
   name: string;

@@ -30,7 +30,7 @@ export class OffersComponent implements OnInit {
   offerSub: Subscription;
   loader: boolean = false;
   imageUrl: string;
-
+  canWrite: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -43,7 +43,7 @@ export class OffersComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-
+    this.canWrite = this.data.canWriteCheck();
     this.getOffers();
   }
 

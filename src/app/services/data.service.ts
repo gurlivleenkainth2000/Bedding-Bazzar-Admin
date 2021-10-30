@@ -3,23 +3,16 @@ import { AngularFirestore } from '@angular/fire/firestore';
 import { BehaviorSubject } from 'rxjs';
 import { Customers } from '../classes/customers';
 import { Images } from '../classes/images';
-import { Services } from '../classes/services';
+import { Products } from '../classes/products';
 import { sliderImages } from '../classes/slider';
-import { Staff } from '../classes/staff';
 import { Videos } from '../classes/videos';
 import { ToastrService } from 'ngx-toastr';
-import { DatePipe, formatDate } from '@angular/common';
+import { formatDate } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Category } from '../classes/category';
-import { Packages } from '../classes/packages';
-import { BuyModel } from '../classes/buy-model';
 import { Queries } from '../classes/queries';
 import * as util from './../utils';
 import firebase from 'firebase/app';
-import { Extras } from '../classes/extras';
-import { Area } from '../classes/area';
-import { AdminModel } from '../classes/AdminModel';
-import { DailyVisitModel } from '../classes/daily-visit';
 
 @Injectable({
   providedIn: 'root'
@@ -37,25 +30,13 @@ export class DataService {
   queryLastDocs = new BehaviorSubject<any>(null);
   queriesRetrieved: boolean = false;
 
-  customerServicesSub = new BehaviorSubject<BuyModel[]>([]);
-  customerServiceLastDocs = new BehaviorSubject<any>(null);
-  customerServicesRetrieved: boolean = false;
-
-  staffSub = new BehaviorSubject<Staff[]>([]);
-  staffLastDocs = new BehaviorSubject<any>(null);
-  staffRetrieved: boolean = false;
-
-  serviceCategorySub = new BehaviorSubject<Category[]>([]);
-  serviceCategoryLastDocs = new BehaviorSubject<any>(null);
+  productCategorySub = new BehaviorSubject<Category[]>([]);
+  productCategoryLastDocs = new BehaviorSubject<any>(null);
   categoryRetrieved: boolean = false;
 
-  servicesSub = new BehaviorSubject<Services[]>([]);
-  serviceLastDocs = new BehaviorSubject<any>(null);
-  serviceRetrieved: boolean = false;
-
-  packagesSub = new BehaviorSubject<Packages[]>([]);
-  packageLastDocs = new BehaviorSubject<any>(null);
-  packageRetrieved: boolean = false;
+  productSub = new BehaviorSubject<Products[]>([]);
+  productLastDocs = new BehaviorSubject<any>(null);
+  productRetrieved: boolean = false;
 
   imagessSub = new BehaviorSubject<Images[]>([]);
   imagesLastDocs = new BehaviorSubject<any>(null);
@@ -69,25 +50,6 @@ export class DataService {
   videosLastDocs = new BehaviorSubject<any>(null);
   videosRetrieved: boolean = false;
 
-  dailyVisitModelSub = new BehaviorSubject<DailyVisitModel[]>([]);
-  dailyVisitModelLastDocs = new BehaviorSubject<any>(null);
-  dailyVisitModelRetrieved: boolean = false;
-
-  extraSub = new BehaviorSubject<Extras>(null);
-  creditChargesSub = new BehaviorSubject<number>(null);
-  bannerTextSub = new BehaviorSubject<String>(null);
-  extrasRetrieved: boolean = false;
-
-  areaSub = new BehaviorSubject<Area[]>([]);
-  areaLastDocs = new BehaviorSubject<any>(null);
-  areasRetrieved: boolean = false;
-
-  rolesSub = new BehaviorSubject<any[]>([]);
-  rolesRetreived: boolean = false;
-
-  adminSub = new BehaviorSubject<AdminModel[]>([]);
-  adminsRetreived: boolean = false;
-
   constructor(
     private dbRef: AngularFirestore,
     private toast: ToastrService,
@@ -97,37 +59,15 @@ export class DataService {
     this.route.queryParams.subscribe(res => {
       this.monthId = res['month'] || formatDate(new Date(), 'yyyyMM', 'en-us');
     })
-   }
-
-  canWriteCheck(url?) {
-    if(JSON.parse(localStorage.getItem("admin")).roles[url || this.router.url.replace("/", "").split("/")[0]] == 2) {
-      return true;
-    } else {
-      return false;
-    }
   }
 
-  getDailyVisits(fromDate: Date, toDate: Date) {
-    this.dbRef
-      .collectionGroup(util.DAILY_VISIT_COLLECTION, (ref) =>
-        ref.where("date", ">=", fromDate).where("date", "<=", toDate)
-      )
-      .valueChanges()
-      .subscribe(
-        (response) => {
-          let list: DailyVisitModel[] = response.map(e => Object.assign({}, e as DailyVisitModel));
-          this.dailyVisitModelSub.next(list);
-          this.dailyVisitModelRetrieved = true;
-          // this.dailyVisitList = response.map((e) => Object.assign({}, e as DailyVisitModel));
-          // this.changeDetector.detectChanges();
-          // // this.tempList = this.dailyVisitList;
-          // this.getDetails(
-          //   this.dailyVisitList[this.selectedRowIndex || 0],
-          //   this.selectedRowIndex || 0
-          // );
-        },
-        (err) => {}
-      );
+  canWriteCheck(url?) {
+    return true;
+    // if (JSON.parse(localStorage.getItem("admin")).roles[url || this.router.url.replace("/", "").split("/")[0]] == 2) {
+    //   return true;
+    // } else {
+    //   return false;
+    // }
   }
 
   getCustomers(monthlyId: string) {
@@ -149,47 +89,37 @@ export class DataService {
       })
   }
 
-  getExtras() {
-    if(!this.extrasRetrieved) {
-      this.dbRef.collection(util.EXTRAS_COLLECTION).doc(util.EXTRAS_COLLECTION)
+  getCategories() {
+    if (!this.categoryRetrieved)
+      this.dbRef.collection(util.PRODUCT_CATEGORY_COLLECTION, (ref) => ref.orderBy("categoryName", "asc"))
         .get().toPromise()
-        .then((res) => {
-          this.extraSub.next(Object.assign({}, res.data() as Extras));
-          this.creditChargesSub.next((res.data() as Extras).creditCharges);
-          this.bannerTextSub.next((res.data() as Extras).bannerText);
-          this.extrasRetrieved = true;
-        }, (err) => {
+        .then((response) => {
+          let productCategoryList: Category[] = response.docs.map(ele => {
+            let productCategoryObj: Category = Object.assign({}, ele.data() as Category);
+            this.productCategoryLastDocs.next(ele);
+            return productCategoryObj;
 
+          })
+          this.productCategorySub.next(productCategoryList);
+          this.categoryRetrieved = true;
         })
-    }
   }
 
-  getRoles() {
-    const compare_to_sort = (x, y) => {
-      if (x.title < y.title) return -1;
-      if (x.title > y.title) return 1;
-      return 0;
-    }
-
-    if(!this.rolesRetreived) {
-      this.dbRef.collection(util.ROLES_COLLECTION).doc(util.ROLES_COLLECTION)
+  getProducts() {
+    if (!this.productRetrieved) {
+      this.dbRef.collection(util.PRODUCTS_COLLECTION, (ref) =>
+        ref.orderBy("serviceName", "asc").limit(this.docLimit)
+      )
         .get().toPromise()
-        .then((res) => {
-          let resObj = Object.assign({}, res.data() as any);
-          this.rolesSub.next(Object.assign([], resObj['roleList'] as any[]).sort(compare_to_sort));
-          this.rolesRetreived = true;
-        }, (err) => { })
-    }
-  }
-
-  getAdmins() {
-    if(!this.adminsRetreived) {
-      this.dbRef.collection(util.ADMINS_COLLECTION)
-        .get().toPromise()
-        .then((res) => {
-          this.adminSub.next(res.docs.map(e => Object.assign({}, e.data() as AdminModel)));
-          this.adminsRetreived = true;
-        }, (err) => { })
+        .then((response) => {
+          let productList: Products[] = response.docs.map(ele => {
+            let prodObj: Products = Object.assign({}, ele.data() as Products);
+            this.productLastDocs.next(ele);
+            return prodObj;
+          })
+          this.productSub.next(productList);
+          this.productRetrieved = true;
+        });
     }
   }
 
@@ -217,79 +147,6 @@ export class DataService {
       })
   }
 
-  getAreas(){
-    if(!this.areasRetrieved)
-    this.dbRef.collection(util.AREAS_COLLECTION, ref => ref.orderBy("type","asc").orderBy("title","asc"))
-    .valueChanges()
-    .subscribe((response) => {
-      this.areaSub.next(response as Area[]);
-      this.areasRetrieved = true;
-
-    })
-    // .get().toPromise()
-    // .then((response) => {
-    //   let areasList: Area[] = response.docs.map(ele => {
-    //     let areaObj: Area = Object.assign({}, ele.data() as Area);
-    //     this.areaLastDocs.next(ele);
-    //     return areaObj;
-    //   })
-    // })
-  }
-
-  getCustomerServices(customerMonthId: string, customerId: string) {
-    this.dbRef.collection(util.MONTHLY_CUSTOMERS_COLLECTION).doc(customerMonthId)
-      .collection(util.CUSTOMERS_COLLECTION).doc(customerId)
-      .collection(util.CUSTOMER_SERVICES_COLLECTION, ref => ref.orderBy('createdOn', 'desc'))
-      .snapshotChanges()
-      .subscribe((res) => {
-        let servicesList = res.map((ele) => {
-          let cusServiceObj: BuyModel = Object.assign({}, ele.payload.doc.data() as BuyModel);
-          this.customerServiceLastDocs.next(ele);
-          return cusServiceObj;
-        });
-        this.customerServicesSub.next(servicesList);
-      }, (error) => {
-        // console.log(">>> Something went wrong!! while fetching data ferom server");
-        // console.log(error);
-      })
-  }
-
-  getServices() {
-    if (!this.serviceRetrieved) {
-      this.dbRef.collection(util.SERVICES_COLLECTION, (ref) =>
-        ref.orderBy("serviceName", "asc").limit(this.docLimit)
-      )
-        .get().toPromise()
-        .then((response) => {
-          let serviceList: Services[] = response.docs.map(ele => {
-            let serviceObj: Services = Object.assign({}, ele.data() as Services);
-            this.serviceLastDocs.next(ele);
-            return serviceObj;
-          })
-          this.servicesSub.next(serviceList);
-          this.serviceRetrieved = true;
-        });
-    }
-  }
-
-  getStaff() {
-    if (!this.staffRetrieved) {
-      this.dbRef.collectionGroup(util.STAFFS_COLLECTION, (ref) => ref.orderBy("createdOn", "desc").limit(this.docLimit))
-        .get().toPromise()
-        .then((response) => {
-          if (response.docs.length != 0) {
-            let staffList = response.docs.map((ele, idx) => {
-              let staffObj: Staff = Object.assign({}, ele.data() as Staff);
-              this.staffLastDocs.next(ele);
-              return staffObj;
-            });
-            this.staffSub.next(staffList);
-            this.staffRetrieved = true;
-          }
-        });
-    }
-  }
-
   checkMobileExists(collectionName: string, mobile: string) {
     return new Promise((resolve, reject) => {
       this.dbRef.collectionGroup(collectionName, ref => ref.where('mobile', '==', mobile))
@@ -305,36 +162,141 @@ export class DataService {
     })
   }
 
-  getCategories() {
-    if (!this.categoryRetrieved)
-      this.dbRef.collection(util.SERVICE_CATEGORY_COLLECTION, (ref) => ref.orderBy("categoryName", "asc"))
-        .get().toPromise()
-        .then((response) => {
-          let serviceCategoryList: Category[] = response.docs.map(ele => {
-            let serviceCategoryObj: Category = Object.assign({}, ele.data() as Category);
-            this.serviceCategoryLastDocs.next(ele);
-            return serviceCategoryObj;
+  // getDailyVisits(fromDate: Date, toDate: Date) {
+  //   this.dbRef
+  //     .collectionGroup(util.DAILY_VISIT_COLLECTION, (ref) =>
+  //       ref.where("date", ">=", fromDate).where("date", "<=", toDate)
+  //     )
+  //     .valueChanges()
+  //     .subscribe(
+  //       (response) => {
+  //         let list: DailyVisitModel[] = response.map(e => Object.assign({}, e as DailyVisitModel));
+  //         this.dailyVisitModelSub.next(list);
+  //         this.dailyVisitModelRetrieved = true;
+  //         // this.dailyVisitList = response.map((e) => Object.assign({}, e as DailyVisitModel));
+  //         // this.changeDetector.detectChanges();
+  //         // // this.tempList = this.dailyVisitList;
+  //         // this.getDetails(
+  //         //   this.dailyVisitList[this.selectedRowIndex || 0],
+  //         //   this.selectedRowIndex || 0
+  //         // );
+  //       },
+  //       (err) => {}
+  //     );
+  // }
 
-          })
-          this.serviceCategorySub.next(serviceCategoryList);
-          this.categoryRetrieved = true;
+  // getExtras() {
+  //   if(!this.extrasRetrieved) {
+  //     this.dbRef.collection(util.EXTRAS_COLLECTION).doc(util.EXTRAS_COLLECTION)
+  //       .get().toPromise()
+  //       .then((res) => {
+  //         this.extraSub.next(Object.assign({}, res.data() as Extras));
+  //         this.creditChargesSub.next((res.data() as Extras).creditCharges);
+  //         this.bannerTextSub.next((res.data() as Extras).bannerText);
+  //         this.extrasRetrieved = true;
+  //       }, (err) => {
 
-        })
-  }
+  //       })
+  //   }
+  // }
 
-  getPackages() {
-    if (!this.packageRetrieved)
-    this.dbRef.collection(util.PACKAGES_COLLECTION, ref => ref.orderBy('createdOn', 'desc').limit(this.docLimit))
-      .get().toPromise()
-      .then((response) => {
-        let packagesList: Packages[] = response.docs.map(ele => {
-          let serviceCategoryObj: Packages = Object.assign({}, ele.data() as Packages);
-          this.serviceCategoryLastDocs.next(ele);
-          return serviceCategoryObj;
-        })
-        this.packagesSub.next(packagesList);
-        this.packageRetrieved = true;
+  // getRoles() {
+  //   const compare_to_sort = (x, y) => {
+  //     if (x.title < y.title) return -1;
+  //     if (x.title > y.title) return 1;
+  //     return 0;
+  //   }
 
-      })
-  }
+  //   if(!this.rolesRetreived) {
+  //     this.dbRef.collection(util.ROLES_COLLECTION).doc(util.ROLES_COLLECTION)
+  //       .get().toPromise()
+  //       .then((res) => {
+  //         let resObj = Object.assign({}, res.data() as any);
+  //         this.rolesSub.next(Object.assign([], resObj['roleList'] as any[]).sort(compare_to_sort));
+  //         this.rolesRetreived = true;
+  //       }, (err) => { })
+  //   }
+  // }
+
+  // getAdmins() {
+  //   if(!this.adminsRetreived) {
+  //     this.dbRef.collection(util.ADMINS_COLLECTION)
+  //       .get().toPromise()
+  //       .then((res) => {
+  //         this.adminSub.next(res.docs.map(e => Object.assign({}, e.data() as AdminModel)));
+  //         this.adminsRetreived = true;
+  //       }, (err) => { })
+  //   }
+  // }
+
+  // getAreas(){
+  //   if(!this.areasRetrieved)
+  //   this.dbRef.collection(util.AREAS_COLLECTION, ref => ref.orderBy("type","asc").orderBy("title","asc"))
+  //   .valueChanges()
+  //   .subscribe((response) => {
+  //     this.areaSub.next(response as Area[]);
+  //     this.areasRetrieved = true;
+
+  //   })
+  //   // .get().toPromise()
+  //   // .then((response) => {
+  //   //   let areasList: Area[] = response.docs.map(ele => {
+  //   //     let areaObj: Area = Object.assign({}, ele.data() as Area);
+  //   //     this.areaLastDocs.next(ele);
+  //   //     return areaObj;
+  //   //   })
+  //   // })
+  // }
+
+  // getCustomerServices(customerMonthId: string, customerId: string) {
+  //   this.dbRef.collection(util.MONTHLY_CUSTOMERS_COLLECTION).doc(customerMonthId)
+  //     .collection(util.CUSTOMERS_COLLECTION).doc(customerId)
+  //     .collection(util.CUSTOMER_PRODUCTS_COLLECTION, ref => ref.orderBy('createdOn', 'desc'))
+  //     .snapshotChanges()
+  //     .subscribe((res) => {
+  //       let servicesList = res.map((ele) => {
+  //         let cusServiceObj: BuyModel = Object.assign({}, ele.payload.doc.data() as BuyModel);
+  //         this.customerproductLastDocs.next(ele);
+  //         return cusServiceObj;
+  //       });
+  //       this.customerproductSub.next(servicesList);
+  //     }, (error) => {
+  //       // console.log(">>> Something went wrong!! while fetching data ferom server");
+  //       // console.log(error);
+  //     })
+  // }
+
+  // getStaff() {
+  //   if (!this.staffRetrieved) {
+  //     this.dbRef.collectionGroup(util.STAFFS_COLLECTION, (ref) => ref.orderBy("createdOn", "desc").limit(this.docLimit))
+  //       .get().toPromise()
+  //       .then((response) => {
+  //         if (response.docs.length != 0) {
+  //           let staffList = response.docs.map((ele, idx) => {
+  //             let staffObj: Staff = Object.assign({}, ele.data() as Staff);
+  //             this.staffLastDocs.next(ele);
+  //             return staffObj;
+  //           });
+  //           this.staffSub.next(staffList);
+  //           this.staffRetrieved = true;
+  //         }
+  //       });
+  //   }
+  // }
+
+  // getPackages() {
+  //   if (!this.packageRetrieved)
+  //   this.dbRef.collection(util.PACKAGES_COLLECTION, ref => ref.orderBy('createdOn', 'desc').limit(this.docLimit))
+  //     .get().toPromise()
+  //     .then((response) => {
+  //       let packagesList: Packages[] = response.docs.map(ele => {
+  //         let serviceCategoryObj: Packages = Object.assign({}, ele.data() as Packages);
+  //         this.productCategoryLastDocs.next(ele);
+  //         return serviceCategoryObj;
+  //       })
+  //       this.packagesSub.next(packagesList);
+  //       this.packageRetrieved = true;
+
+  //     })
+  // }
 }

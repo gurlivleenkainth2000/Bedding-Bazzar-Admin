@@ -31,7 +31,7 @@ export class ImagesComponent implements OnInit {
   imagesSub: Subscription;
   loader: boolean = false;
   imageUrl: string;
-
+  canWrite: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -45,7 +45,7 @@ export class ImagesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-
+    this.canWrite = this.data.canWriteCheck();
 
     if (this.data.imagesRetrieved) {
       this.imagesSub = this.data.imagessSub.subscribe((res) => {

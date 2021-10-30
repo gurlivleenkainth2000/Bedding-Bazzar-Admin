@@ -33,7 +33,7 @@ export class NotificationsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-
+    this.canWrite = this.data.canWriteCheck();
     this.getNotifications();
   }
 

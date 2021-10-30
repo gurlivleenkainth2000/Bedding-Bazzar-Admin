@@ -29,7 +29,7 @@ export class SliderComponent implements OnInit {
   sliderImagesModal: sliderImages;
   sliderSub: Subscription;
   imageUrl: string;
-
+  canWrite: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -42,7 +42,7 @@ export class SliderComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-
+    this.canWrite = this.data.canWriteCheck();
 
     if (this.data.sliderRetrieved) {
       this.data.sliderSub.subscribe((res) => {

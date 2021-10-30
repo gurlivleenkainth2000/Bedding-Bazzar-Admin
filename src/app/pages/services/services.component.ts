@@ -5,7 +5,7 @@ import { AngularFireStorage } from "@angular/fire/storage";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { ToastrService } from "ngx-toastr";
-import { Services } from "src/app/classes/services";
+import { Products } from "src/app/classes/products";
 import * as util from "./../../utils";
 import firebase from "firebase/app";
 import { Subscription } from "rxjs";
@@ -27,7 +27,7 @@ export class ServicesComponent implements OnInit {
   monthlyId: string;
   tempImageFile: any = null;
 
-  servicesList: Services[] = [];
+  servicesList: Products[] = [];
   categories: Category[] = [];
 
   docLimit: number = 50;
@@ -35,9 +35,9 @@ export class ServicesComponent implements OnInit {
   loader: boolean = false;
   showLoadMore: boolean = false;
   updation: boolean = false;
-  servicesModel: Services;
+  servicesModel: Products;
   imageUrl: string;
-  servicesSub: Subscription;
+  productSub: Subscription;
   categorySub: Subscription;
   serviceDetailCardBool: boolean = false;
 
@@ -61,14 +61,14 @@ export class ServicesComponent implements OnInit {
 
 
     this.data.getCategories();
-    this.categorySub = this.data.serviceCategorySub.subscribe((res) => {
+    this.categorySub = this.data.productCategorySub.subscribe((res) => {
       if(res.length != 0) {
         this.categories = res;
       }
     })
 
-    this.data.getServices();
-    this.data.servicesSub.subscribe((response) => {
+    this.data.getProducts();
+    this.data.productSub.subscribe((response) => {
       if (response.length < this.docLimit) {
         this.showLoadMore = false;
       } else {
@@ -97,7 +97,7 @@ export class ServicesComponent implements OnInit {
 
   // getServices() {
   //   this.data.serviceRetrieved = true;
-  //   this.dbRef.collection(util.SERVICES_COLLECTION, (ref) =>
+  //   this.dbRef.collection(util.PRODUCTS_COLLECTION, (ref) =>
   //       ref.orderBy("createdOn", "desc").limit(this.docLimit)
   //     )
   //     .get().toPromise()
@@ -110,25 +110,25 @@ export class ServicesComponent implements OnInit {
 
   //       if (response.docs.length != 0) {
   //         response.docs.forEach((ele, idx) => {
-  //           let cusObj: Services = Object.assign({}, ele.data() as Services);
+  //           let cusObj: Products = Object.assign({}, ele.data() as Services);
   //           this.lastDocs = ele;
   //           this.servicesList.push(cusObj);
-  //           this.data.serviceLastDocs.next(ele);
+  //           this.data.productLastDocs.next(ele);
   //         });
-  //         this.data.servicesSub.next(this.servicesList);
+  //         this.data.productSub.next(this.servicesList);
   //       }
   //     });
   // }
 
   async loadMoreServiceServices() {
     if (this.lastDocs == undefined) {
-      this.data.serviceLastDocs.subscribe(res => {
+      this.data.productLastDocs.subscribe(res => {
         if (res != null) {
           this.lastDocs = res;
         }
       });
     }
-    this.dbRef.collection(util.SERVICES_COLLECTION, (ref) =>
+    this.dbRef.collection(util.PRODUCTS_COLLECTION, (ref) =>
       ref
         .orderBy("createdOn", "desc")
         .startAfter(this.lastDocs)
@@ -144,12 +144,12 @@ export class ServicesComponent implements OnInit {
 
         if (response.docs.length != 0) {
           response.docs.forEach((ele, idx) => {
-            let cusObj: Services = Object.assign({}, ele.data() as Services);
+            let cusObj: Products = Object.assign({}, ele.data() as Products);
             this.lastDocs = ele;
             this.servicesList.push(cusObj);
-            this.data.serviceLastDocs.next(ele);
+            this.data.productLastDocs.next(ele);
           });
-          this.data.servicesSub.next(this.servicesList);
+          this.data.productSub.next(this.servicesList);
         } else {
           this.toast.info('No More Records', '');
         }
@@ -160,12 +160,12 @@ export class ServicesComponent implements OnInit {
     this.router.navigate([serviceId, "stats"], { queryParams: { name: serviceName }, queryParamsHandling: "merge", relativeTo: this.route })
   }
 
-  viewServiceDetails(modal, serviceObj: Services) {
+  viewServiceDetails(modal, serviceObj: Products) {
     this.servicesModel = serviceObj;
     this.modalService.open(modal, { size: 'sm' });
   }
 
-  openModal(modal, customer: Services = null) {
+  openModal(modal, customer: Products = null) {
     this.modalService.open(modal, { size: "sm" });
     this.initialiseModal(customer);
   }
@@ -175,12 +175,12 @@ export class ServicesComponent implements OnInit {
     this.imageUrl = imageUrl;
   }
 
-  openDeleteModal(modal, customer: Services) {
+  openDeleteModal(modal, customer: Products) {
     this.modalService.open(modal, { size: "sm" });
     this.servicesModel = customer;
   }
 
-  initialiseModal(serviceObj: Services) {
+  initialiseModal(serviceObj: Products) {
     if (serviceObj == null) {
       this.updation = false;
       this.serviceForm = this.fb.group({
@@ -240,7 +240,7 @@ export class ServicesComponent implements OnInit {
 
   async registeredService(form: FormGroup) {
     this.loader = true;
-    let serviceObj: Services = { ...form.value };
+    let serviceObj: Products = { ...form.value };
 
     if (this.tempImageFile != null) {
       const file = this.tempImageFile;
@@ -252,7 +252,7 @@ export class ServicesComponent implements OnInit {
 
 
     this.dbRef
-      .collection(util.SERVICES_COLLECTION)
+      .collection(util.PRODUCTS_COLLECTION)
       .doc(serviceObj.serviceId)
       .set(serviceObj, { merge: true })
       .then(
@@ -267,7 +267,7 @@ export class ServicesComponent implements OnInit {
           } else {
             this.servicesList.splice(0, 0, serviceObj);
             this.toast.show("Service Registered Successfully", "");
-            this.statsService.maintainGlobalStats(util.SERVICES_COLLECTION, true)
+            this.statsService.maintainGlobalStats(util.PRODUCTS_COLLECTION, true)
           }
 
           this.updation = false;
@@ -285,7 +285,7 @@ export class ServicesComponent implements OnInit {
 
   async deleteService() {
     this.dbRef
-      .collection(util.SERVICES_COLLECTION)
+      .collection(util.PRODUCTS_COLLECTION)
       .doc(this.servicesModel.serviceId)
       .delete()
       .then(
@@ -296,7 +296,7 @@ export class ServicesComponent implements OnInit {
           this.servicesList.splice(index, 1);
           this.modalService.dismissAll();
           this.toast.show("Service Deleted Successfully");
-          this.statsService.maintainGlobalStats(util.SERVICES_COLLECTION, false)
+          this.statsService.maintainGlobalStats(util.PRODUCTS_COLLECTION, false)
         },
         (error) => {
           // console.log(">>> Error", error);

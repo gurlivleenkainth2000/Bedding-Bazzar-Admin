@@ -45,78 +45,78 @@ export class DashboardComponent implements OnInit {
   ngOnInit() {
     this.selectedDate = new DatePipe('en').transform(this.today, "yyyy-MM-dd");
     this.selectedMonth = new DatePipe('en').transform(this.today, "yyyy-MM");
-    this.getStatsGlobal();
-    this.getMontlyStats();
-    this.getDailyVisitsStats();
+    // this.getStatsGlobal();
+    // this.getMontlyStats();
+    // this.getDailyVisitsStats();
   }
 
-  getStatsGlobal() {
-    this.dbRef.collection(util.STATS_GLOBAL_COLLECTION).doc(util.STATS_GLOBAL_COLLECTION)
-    .valueChanges()
-    .subscribe(res => {
-      this.globalStat = Object.assign({}, res);
-    })
-  }
+  // getStatsGlobal() {
+  //   this.dbRef.collection(util.STATS_GLOBAL_COLLECTION).doc(util.STATS_GLOBAL_COLLECTION)
+  //   .valueChanges()
+  //   .subscribe(res => {
+  //     this.globalStat = Object.assign({}, res);
+  //   })
+  // }
 
-  getDailyVisitsStats(dateSelectorBool: boolean = false, date?: Date) {
-    let datePipe = new DatePipe('en-us')
-    let monthId = datePipe.transform(date || this.today, 'yyyyMM');
-    let monthDayId = datePipe.transform(date || this.today, 'yyyyMMdd');
+  // getDailyVisitsStats(dateSelectorBool: boolean = false, date?: Date) {
+  //   let datePipe = new DatePipe('en-us')
+  //   let monthId = datePipe.transform(date || this.today, 'yyyyMM');
+  //   let monthDayId = datePipe.transform(date || this.today, 'yyyyMMdd');
 
-    this.dbRef.collection(util.STATS_MONTHLY_VISITS_COLLECTION).doc(monthId)
-      .collection(util.STATS_DAILY_VISITS_COLLECTION).doc(monthDayId)
-      .valueChanges()
-      .subscribe(res => {
-        if(res != undefined) {
-          if(dateSelectorBool) this.selectedDateForDailyVisitsStats = date;
-          if(date === this.today) delete(this.selectedDateForDailyVisitsStats);
+  //   this.dbRef.collection(util.STATS_MONTHLY_VISITS_COLLECTION).doc(monthId)
+  //     .collection(util.STATS_DAILY_VISITS_COLLECTION).doc(monthDayId)
+  //     .valueChanges()
+  //     .subscribe(res => {
+  //       if(res != undefined) {
+  //         if(dateSelectorBool) this.selectedDateForDailyVisitsStats = date;
+  //         if(date === this.today) delete(this.selectedDateForDailyVisitsStats);
 
-          let areaKeys = Object.keys(res['areaIdNameMap'] || []);
-          let serviceKeys = Object.keys(res['serviceIdNameMap'] || []);
-          let staffKeys = Object.keys(res['staffIdNameMap'] || []);
-          let packageServiceKeys = Object.keys(res['pServiceIdNameMap'] || []);
+  //         let areaKeys = Object.keys(res['areaIdNameMap'] || []);
+  //         let serviceKeys = Object.keys(res['serviceIdNameMap'] || []);
+  //         let staffKeys = Object.keys(res['staffIdNameMap'] || []);
+  //         let packageServiceKeys = Object.keys(res['pServiceIdNameMap'] || []);
 
-          this.areaStats = areaKeys.map((key) => ({
-            id: key,
-            name: res['areaIdNameMap'][key],
-            value: res['areaIdCountMap'][key]
-          }));
-          this.serviceStats = serviceKeys.map((key) => ({
-            id: key,
-            name: res['serviceIdNameMap'][key],
-            value: res['serviceIdCountMap'][key]
-          }));
-          this.staffStats = staffKeys.map((key) => ({
-            id: key,
-            name: res['staffIdNameMap'][key],
-            value: res['staffIdCountMap'][key]
-          }));
-          this.packageServicesStats = packageServiceKeys.map((key) => ({
-            id: key,
-            name: String(res['pServiceIdNameMap'][key]).replace(":", " "),
-            value: res['pServiceIdCountMap'][key]
-          }));
-        } else {
-          if(dateSelectorBool) {
-            this.toast.info(`No Record Found for ${datePipe.transform(date, "dd MMMM yyyy")}`, "");
-          }
-        }
-      })
-  }
+  //         this.areaStats = areaKeys.map((key) => ({
+  //           id: key,
+  //           name: res['areaIdNameMap'][key],
+  //           value: res['areaIdCountMap'][key]
+  //         }));
+  //         this.serviceStats = serviceKeys.map((key) => ({
+  //           id: key,
+  //           name: res['serviceIdNameMap'][key],
+  //           value: res['serviceIdCountMap'][key]
+  //         }));
+  //         this.staffStats = staffKeys.map((key) => ({
+  //           id: key,
+  //           name: res['staffIdNameMap'][key],
+  //           value: res['staffIdCountMap'][key]
+  //         }));
+  //         this.packageServicesStats = packageServiceKeys.map((key) => ({
+  //           id: key,
+  //           name: String(res['pServiceIdNameMap'][key]).replace(":", " "),
+  //           value: res['pServiceIdCountMap'][key]
+  //         }));
+  //       } else {
+  //         if(dateSelectorBool) {
+  //           this.toast.info(`No Record Found for ${datePipe.transform(date, "dd MMMM yyyy")}`, "");
+  //         }
+  //       }
+  //     })
+  // }
 
-  getMontlyStats(monthYear?: Date) {
-    let monthId = new DatePipe('en-us').transform(monthYear || this.today, "yyyyMM");
-    this.dbRef.collection(util.STATS_MONTHLY_COLLECTION)
-      .doc(monthId)
-      .valueChanges()
-      .subscribe((res) => {
-        // console.log(">>> Res: ", res);
-        this.setBarChart(res || null, monthId);
-        this.selectedMonthYearForMonthlyStats = monthYear;
-      }, (error) => {
-        console.log(">>> Error: ", error);
-      })
-  }
+  // getMontlyStats(monthYear?: Date) {
+  //   let monthId = new DatePipe('en-us').transform(monthYear || this.today, "yyyyMM");
+  //   this.dbRef.collection(util.STATS_MONTHLY_COLLECTION)
+  //     .doc(monthId)
+  //     .valueChanges()
+  //     .subscribe((res) => {
+  //       // console.log(">>> Res: ", res);
+  //       this.setBarChart(res || null, monthId);
+  //       this.selectedMonthYearForMonthlyStats = monthYear;
+  //     }, (error) => {
+  //       console.log(">>> Error: ", error);
+  //     })
+  // }
 
   setBarChart(res, monthId) {
 

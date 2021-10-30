@@ -1,5 +1,5 @@
 import firebase from "firebase/app";
-import { Services } from "./services";
+import { Products } from "./products";
 
 export class Staff {
   name: string;
@@ -14,6 +14,6 @@ export class Staff {
   active: boolean;
   createdOn: firebase.firestore.Timestamp;
   salary: number;
-  services?: Services[];
+  services?: Products[];
   servicesHashcode?: string[];
 }

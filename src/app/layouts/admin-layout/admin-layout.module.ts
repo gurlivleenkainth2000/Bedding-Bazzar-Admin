@@ -14,7 +14,6 @@ import { ServicesComponent } from '../../pages/services/services.component';
 import { ImagesComponent } from 'src/app/pages/images/images.component';
 import { SliderComponent } from 'src/app/pages/slider/slider.component';
 import { VideosComponent } from 'src/app/pages/videos/videos.component';
-import { ExtrasComponent } from '../../pages/extras/extras.component';
 import { ServiceCategoryComponent } from '../../pages/service-category/service-category.component';
 import { OffersComponent } from '../../pages/offers/offers.component';
 import { PackagesComponent } from '../../pages/packages/packages.component';
@@ -33,16 +32,15 @@ import { NotificationsComponent } from '../../pages/notifications/notifications.
     ClipboardModule
   ],
   declarations: [
-    DashboardComponent,
+    // DashboardComponent,
     CustomersComponent,
     ServicesComponent,
     ImagesComponent,
     SliderComponent,
     VideosComponent,
-    ExtrasComponent,
     ServiceCategoryComponent,
     OffersComponent,
-    PackagesComponent,
+    // PackagesComponent,
     QueriesComponent,
     NotificationsComponent
   ]
